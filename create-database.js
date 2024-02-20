@@ -52,4 +52,4 @@ const categoryModel = mongoose.model("categorys", categorySchema);
 const categoryCol = await db.createCollection("categorys");
 
 // Lägg till kategorier här!!
-let categories = await categoryColCol.insertMany([]);
+let categories = await categoryCol.insertMany([]);
