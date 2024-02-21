@@ -6,11 +6,89 @@ const main = async () => {
   try {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
+    // Meny val 1
     const viewAllProducts = async () => {
       const allProducts = await productModel.find({});
       console.log(allProducts);
     };
 
+    // Meny val 2 (Elin jobbar här)
+    const addProduct = async () => {
+      let product = p("Enter the name of the product: ");
+
+      console.log(
+        "Choose a supplier:",
+        "\n1. ElectroTech",
+        "\n2. GreenHarvest",
+        "\n3. TrailBlazeOutdoors"
+      );
+
+      let supplierChoice = parseInt(p("Enter the supplier-number: "));
+
+      let supplier;
+      switch (supplierChoice) {
+        case 1:
+          supplier = "ElectroTech";
+          break;
+        case 2:
+          supplier = "GreenHarvest";
+          break;
+        case 3:
+          supplier = "TrailBlazeOutdoors";
+          break;
+        default:
+          console.log("Invalid category choice. Defaulting to 'GreenHarvest'.");
+          category = "GreenHarvest";
+      }
+
+      console.log(
+        "Choose a category:",
+        "\n1. Electronics",
+        "\n2. Food & Beverage",
+        "\n3. Outdoor Gear"
+      );
+
+      let categoryChoice = parseInt(p("Enter the category-number: "));
+
+      let category;
+      switch (categoryChoice) {
+        case 1:
+          category = "Electronics";
+          break;
+        case 2:
+          category = "Food & Beverage";
+          break;
+        case 3:
+          category = "Outdoor Gear";
+          break;
+        default:
+          console.log("Invalid category choice. Defaulting to 'Electronics'.");
+          category = "Electronics";
+      }
+      let price = p("Enter the product price: ");
+      let cost = p("Enter the product cost: ");
+      let stock = p("Enter stock quantity: ");
+
+      const newProduct = {
+        product: product,
+        supplier: supplier,
+        category: categoryChoice,
+        price: price,
+        cost: cost,
+        stock: stock,
+      };
+
+      const productDocument = new productModel(newProduct);
+      await productDocument.save();
+
+      console.log(
+        "you've added",
+        productDocument.product,
+        " to the list of products."
+      );
+    };
+
+    // Meny val 15
     const exitApp = async () => {
       console.log("GoodBye");
       runApp = false;
@@ -48,6 +126,7 @@ const main = async () => {
         await viewAllProducts();
       } else if (input == "2") {
         console.log("Add new product");
+        await addProduct();
       } else if (input == "3") {
         console.log("View products by category");
       } else if (input == "4") {
@@ -88,5 +167,4 @@ const main = async () => {
     await mongoose.connection.close();
   }
 };
-
 main();
