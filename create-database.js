@@ -88,9 +88,7 @@ let products = await productCol.insertMany([
     cost: { type: 16.99 },
     stock: { type: 90 },
   },
-])
-
-
+]);
 
 // Suppliers
 const supplierSchema = mongoose.Schema({
@@ -109,7 +107,6 @@ const supplierCol = await db.createCollection("suppliers");
 let suppliers = await supplierCol.insertMany([]);
 
 // Offers
-
 const offerSchema = mongoose.Schema({
   offer: { type: Number },
   offerName: { type: String },
