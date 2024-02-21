@@ -71,7 +71,7 @@ const main = async () => {
 
       const newProduct = {
         product: product,
-        supplier: supplier,
+        supplier: supplierChoice,
         category: categoryChoice,
         price: price,
         cost: cost,
