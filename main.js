@@ -1,15 +1,15 @@
 import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
-// import { productModel } from "./create-database"
+import { productModel } from "./create-database.js"
 
 const main = async () => {
     try {
         await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-        // const viewAllProducts = async () => {
-        //     const allProducts = await productModel.find({})
-        //     console.log(allProducts)
-        // }
+        const viewAllProducts = async () => {
+            const allProducts = await productModel.find({})
+            console.log(allProducts)
+        }
 
         const exitApp = async() => {
             console.log("GoodBye")
