@@ -88,9 +88,7 @@ let products = await productCol.insertMany([
     cost: { type: 16.99 },
     stock: { type: 90 },
   },
-])
-
-
+]);
 
 // Suppliers
 const supplierSchema = mongoose.Schema({
@@ -108,9 +106,19 @@ const supplierCol = await db.createCollection("suppliers");
 // Lägg till leverantörer här!!
 let suppliers = await supplierCol.insertMany([]);
 
-// Collection för offers
+// Offers
 const offerSchema = mongoose.Schema({
-  // schema utifrån chatgpts data?!
+  offer: { type: Number },
+  offerName: { type: String },
+  products: {
+    type: [
+      {
+        productName: { type: String },
+        productPrice: { type: Number },
+      },
+    ],
+    default: [],
+  },
 });
 
 const offerModel = mongoose.model("offers", offerSchema);
@@ -119,3 +127,15 @@ const offerCol = await db.createCollection("offers");
 
 // Lägg till offers här!!!
 let offers = await offerCol.insertMany([]);
+
+// SALES ORDERS
+const salesOrderSchema = mongoose.Schema({
+  // klurar på utseende /Elin
+});
+
+const salesOrderModel = mongoose.model("sales orders", salesOrderSchema);
+
+const salesOrderCol = await db.createCollection("sales orders");
+
+// Denna kommer vara tom tills användaren skapar ordrar
+let salesOrders = await salesOrderCol.insertMany([]);
