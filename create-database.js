@@ -39,3 +39,15 @@ const supplierCol = await db.createCollection("suppliers");
 
 // Lägg till leverantörer här!!
 let suppliers = await supplierCol.insertMany([]);
+
+// Collection för offers
+const offerSchema = mongoose.Schema({
+  // schema utifrån chatgpts data?!
+});
+
+const offerModel = mongoose.model("offers", offerSchema);
+
+const offerCol = await db.createCollection("offers");
+
+// Lägg till offers här!!!
+let offers = await offerCol.insertMany([]);
