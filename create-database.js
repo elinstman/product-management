@@ -108,7 +108,8 @@ let suppliers = await supplierCol.insertMany([]);
 
 // Offers
 const offerSchema = mongoose.Schema({
-  offer: { type: Number },
+  offernumber: { type: Number },
+  active: { type: Boolean },
   offerName: { type: String },
   products: {
     type: [
@@ -130,12 +131,22 @@ let offers = await offerCol.insertMany([]);
 
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
-  // klurar på utseende /Elin
+  orderNumber: { type: Number },
+  status: { type: Boolean },
+  offerNumber: { type: Number },
+  products: {
+    type: [
+      {
+        productName: { type: String },
+        productPrice: { type: Number },
+      },
+    ],
+  },
 });
 
-const salesOrderModel = mongoose.model("sales orders", salesOrderSchema);
+const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 
-const salesOrderCol = await db.createCollection("sales orders");
+const salesOrderCol = await db.createCollection("sales-orders");
 
 // Denna kommer vara tom tills användaren skapar ordrar
 let salesOrders = await salesOrderCol.insertMany([]);
