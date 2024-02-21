@@ -148,9 +148,6 @@ const offerModel = mongoose.model("offers", offerSchema);
 
 const offerCol = await db.createCollection("offers");
 
-// Lägg till offers här!!!
-// let offers = await offerCol.insertMany([]);
-
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
   orderNumber: { type: Number },
@@ -169,6 +166,3 @@ const salesOrderSchema = mongoose.Schema({
 const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 
 const salesOrderCol = await db.createCollection("sales-orders");
-
-// // Denna kommer vara tom tills användaren skapar ordrar
-// let salesOrders = await salesOrderCol.insertMany([]);
