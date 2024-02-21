@@ -5,8 +5,7 @@ await connect("mongodb://localhost:27017/elin-nora-assignment-db");
 const { db } = mongoose.connection;
 
 const productSchema = mongoose.Schema({
-  // product: { type: Number },
-  name: { type: String },
+  product: { type: String },
   supplier: { type: String },
   category: {
     name: { type: String },
