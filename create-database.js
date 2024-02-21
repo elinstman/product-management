@@ -99,6 +99,7 @@ const supplierSchema = mongoose.Schema({
   phone: { type: Number },
 });
 
+
 const supplierModel = mongoose.model("suppliers", supplierSchema);
 
 const supplierCol = await db.createCollection("suppliers");
