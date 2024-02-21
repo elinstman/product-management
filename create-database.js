@@ -39,17 +39,3 @@ const supplierCol = await db.createCollection("suppliers");
 
 // Lägg till leverantörer här!!
 let suppliers = await supplierCol.insertMany([]);
-
-// Categories
-const categorySchema = mongoose.Schema({
-  category: { type: Number },
-  name: { type: String },
-  description: { type: String },
-});
-
-const categoryModel = mongoose.model("categorys", categorySchema);
-
-const categoryCol = await db.createCollection("categorys");
-
-// Lägg till kategorier här!!
-let categories = await categoryCol.insertMany([]);
