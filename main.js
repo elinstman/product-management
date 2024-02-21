@@ -16,63 +16,66 @@ const main = async () => {
     const addProduct = async () => {
       let product = p("Enter the name of the product: ");
 
-      console.log(
-        "Choose a supplier:",
-        "\n1. ElectroTech",
-        "\n2. GreenHarvest",
-        "\n3. TrailBlazeOutdoors"
-      );
-
-      let supplierChoice = parseInt(p("Enter the supplier-number: "));
-
       let supplier;
-      switch (supplierChoice) {
-        case 1:
-          supplier = "ElectroTech";
-          break;
-        case 2:
-          supplier = "GreenHarvest";
-          break;
-        case 3:
-          supplier = "TrailBlazeOutdoors";
-          break;
-        default:
-          console.log("Invalid category choice. Defaulting to 'GreenHarvest'.");
-          category = "GreenHarvest";
+      while (!supplier) {
+        console.log(
+          "Choose a supplier:",
+          "\n1. ElectroTech",
+          "\n2. GreenHarvest",
+          "\n3. TrailBlazeOutdoors"
+        );
+        let supplierChoice = parseInt(p("Enter the supplier-number: "));
+        switch (supplierChoice) {
+          case 1:
+            supplier = "ElectroTech";
+            break;
+          case 2:
+            supplier = "GreenHarvest";
+            break;
+          case 3:
+            supplier = "TrailBlazeOutdoors";
+            break;
+          default:
+            console.log(
+              "Invalid supplier choice. Please enter a valid supplier number."
+            );
+        }
       }
-
-      console.log(
-        "Choose a category:",
-        "\n1. Electronics",
-        "\n2. Food & Beverage",
-        "\n3. Outdoor Gear"
-      );
-
-      let categoryChoice = parseInt(p("Enter the category-number: "));
 
       let category;
-      switch (categoryChoice) {
-        case 1:
-          category = "Electronics";
-          break;
-        case 2:
-          category = "Food & Beverage";
-          break;
-        case 3:
-          category = "Outdoor Gear";
-          break;
-        default:
-          console.log("Invalid category choice. Defaulting to 'Electronics'.");
-          category = "Electronics";
+      while (!category) {
+        console.log(
+          "Choose a category:",
+          "\n1. Electronics",
+          "\n2. Food & Beverage",
+          "\n3. Outdoor Gear"
+        );
+        let categoryChoice = parseInt(p("Enter the category-number: "));
+        switch (categoryChoice) {
+          case 1:
+            category = "Electronics";
+            break;
+          case 2:
+            category = "Food & Beverage";
+            break;
+          case 3:
+            category = "Outdoor Gear";
+            break;
+          default:
+            console.log(
+              "Invalid category choice. Please enter a valid category number."
+            );
+        }
       }
+
       let price = p("Enter the product price: ");
       let cost = p("Enter the product cost: ");
       let stock = p("Enter stock quantity: ");
 
       const newProduct = {
         product: product,
-        supplier: supplierChoice,
-        category: categoryChoice,
+        supplier: supplier,
+        category: category,
         price: price,
         cost: cost,
         stock: stock,
