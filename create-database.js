@@ -215,3 +215,35 @@ const salesOrderSchema = mongoose.Schema({
 const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 
 const salesOrderCol = await db.createCollection("sales-orders");
+
+// Kategorier
+
+const categorySchema = mongoose.Schema({
+  name: { type: String },
+  description: { type: String },
+});
+
+const categoryModel = mongoose.model("category", categorySchema);
+
+const categoryCol = await db.createCollection("categories");
+
+const categories = [
+  {
+    name: "Electronics",
+    description: "Cutting-edge technology",
+  },
+  {
+    name: "Food & Beverage",
+    description: "Locally sourced organic",
+  },
+  {
+    name: "Outdoor Gear",
+    description: "Durable equipment for adventures",
+  },
+];
+
+const categoryCountPre = await categoryModel.countDocuments();
+
+if (categoryCountPre === 0) {
+  await categoryCol.insertMany(suppliers);
+}
