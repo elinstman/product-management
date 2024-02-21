@@ -90,6 +90,12 @@ let products = [
   },
 ];
 
+const countPre = await productModel.countDocuments();
+
+if (countPre === 0) {
+  await productCol.insertMany(products);
+}
+
 // Suppliers
 const supplierSchema = mongoose.Schema({
   supplier: { type: Number },
@@ -152,8 +158,3 @@ const salesOrderCol = await db.createCollection("sales-orders");
 // // Denna kommer vara tom tills användaren skapar ordrar
 let salesOrders = await salesOrderCol.insertMany([]);
 
-const countPre = await productModel.countDocuments();
-
-if (countPre === 0) {
-  await productCol.insertMany(products);
-}

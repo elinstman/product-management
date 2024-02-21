@@ -1,10 +1,15 @@
 import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
-// import productModel from "create-database.js"
+// import { productModel } from "./create-database"
 
 const main = async () => {
     try {
-        // await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
+        await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
+
+        // const viewAllProducts = async () => {
+        //     const allProducts = await productModel.find({})
+        //     console.log(allProducts)
+        // }
 
         const exitApp = async() => {
             console.log("GoodBye")
@@ -41,6 +46,7 @@ const main = async () => {
 
             if (input == "1") {
                 console.log("Add new category")
+                await viewAllProducts()
 
             } else if (input == "2") {
                 console.log("Add new product")
