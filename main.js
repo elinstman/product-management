@@ -6,9 +6,13 @@ const main = async () => {
     try {
         await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-        const viewAllProducts = async () => {
-            const allProducts = await productModel.find({})
-            console.log(allProducts)
+        const viewProductsByAttribute = async (attribute) => {
+            const productsByCategory = await productModel.aggregate(
+                [
+                    {$match: {"category.name": "ElectroTech"}}, 
+                ]
+            )
+            console.log(productsByCategory)
         }
 
         const exitApp = async() => {
@@ -46,13 +50,18 @@ const main = async () => {
 
             if (input == "1") {
                 console.log("Add new category")
-                await viewAllProducts()
 
             } else if (input == "2") {
                 console.log("Add new product")
 
             } else if (input == "3") {
                 console.log("View products by category")
+                const productsByCategory = await productModel.aggregate(
+                    [
+                        { $match: { "category.name": "Electronics" } }, 
+                    ]
+                )
+                console.log(productsByCategory)
 
             } else if (input == "4") {
                 console.log("View products by supplier");

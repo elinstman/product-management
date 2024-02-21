@@ -21,7 +21,7 @@ export const productModel = mongoose.model("products", productSchema);
 const productCol = await db.createCollection("products");
 
 // Lägg in data för produkterna här!!!
-let products = await productCol.insertMany([
+const products = [
   {
     product: "Laptop X1",
     supplier: "ElectroTech",
@@ -88,7 +88,13 @@ let products = await productCol.insertMany([
     cost: 16.99,
     stock: 90,
   },
-]);
+];
+
+const productCountPre = await productModel.countDocuments();
+
+if (productCountPre === 0) {
+  await productCol.insertMany(products);
+}
 
 // Suppliers
 const supplierSchema = mongoose.Schema({
@@ -104,7 +110,7 @@ const supplierModel = mongoose.model("suppliers", supplierSchema);
 const supplierCol = await db.createCollection("suppliers");
 
 // Lägg till leverantörer här!!
-let suppliers = await supplierCol.insertMany([
+const suppliers = [
   {
     supplier: 1,
     name: "ElectroTech",
@@ -126,7 +132,13 @@ let suppliers = await supplierCol.insertMany([
     email: "sales@trailblazeoutdoors.com",
     phone: 555123456,
   },
-]);
+];
+
+const supplierCountPre = await supplierModel.countDocuments();
+
+if (supplierCountPre === 0) {
+  await supplierCol.insertMany(suppliers);
+}
 
 // Offers
 const offerSchema = mongoose.Schema({
