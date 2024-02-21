@@ -229,7 +229,7 @@ const categorySchema = mongoose.Schema({
   description: { type: String },
 });
 
-const categoryModel = mongoose.model("category", categorySchema);
+export const categoryModel = mongoose.model("category", categorySchema);
 
 const categoryCol = await db.createCollection("categories");
 

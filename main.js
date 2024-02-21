@@ -1,18 +1,19 @@
 import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
+import { categoryModel } from "./create-database.js";
 
 const main = async () => {
   try {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-    // Meny val 1
+    // Meny val 0
     const viewAllProducts = async () => {
       const allProducts = await productModel.find({});
       console.log(allProducts);
     };
 
-    // Meny val 2 (Elin jobbar här)
+    // Meny val 1 (Elin jobbar här)
     const addProduct = async () => {
       let product = p("Enter the name of the product: ");
 
@@ -91,6 +92,26 @@ const main = async () => {
       );
     };
 
+    // Meny val 2 (Elin jobbar här)
+    const addCategory = async () => {
+      let name = p("Enter the category name: ");
+      let description = p("Enter the category description: ");
+
+      const newCategory = {
+        name: name,
+        description: description,
+      };
+
+      const categoryDocument = new categoryModel(newCategory);
+      await categoryDocument.save();
+
+      console.log(
+        "you've added",
+        categoryDocument.name,
+        " to the list of categories."
+      );
+    };
+
     // Meny val 15
     const exitApp = async () => {
       console.log("GoodBye");
@@ -104,8 +125,9 @@ const main = async () => {
       console.log(
         "--------------------------------------------------------------------------------\n",
         "Menue:",
-        "\n1. View all products",
-        "\n2. Add new product",
+        "\n0. View all products",
+        "\n1. Add new product",
+        "\n2. Add new category",
         "\n3. View products by category",
         "\n4. View products by supplier",
         "\n5. View all offers within a price range",
@@ -124,12 +146,15 @@ const main = async () => {
 
       let input = p("Make a choice by entering a number: ");
 
-      if (input == "1") {
-        console.log("Add new category");
+      if (input == "0") {
+        console.log("View all products");
         await viewAllProducts();
-      } else if (input == "2") {
+      } else if (input == "1") {
         console.log("Add new product");
         await addProduct();
+      } else if (input == "2") {
+        console.log("Add new category");
+        await addCategory();
       } else if (input == "3") {
         console.log("View products by category");
       } else if (input == "4") {
