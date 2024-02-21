@@ -1,18 +1,19 @@
 import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
+import { categoryModel } from "./create-database.js";
 
 const main = async () => {
   try {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-    // Meny val 1
+    // Meny val 0
     const viewAllProducts = async () => {
       const allProducts = await productModel.find({});
       console.log(allProducts);
     };
 
-    // Meny val 2 (Elin jobbar här)
+    // Meny val 1 (Elin jobbar här)
     const addProduct = async () => {
       let product = p("Enter the name of the product: ");
 
@@ -91,6 +92,26 @@ const main = async () => {
       );
     };
 
+    // Meny val 2 (Elin jobbar här)
+    const addCategory = async () => {
+      let name = p("Enter the category name: ");
+      let description = p("Enter the category description: ");
+
+      const newCategory = {
+        name: name,
+        description: description,
+      };
+
+      const categoryDocument = new categoryModel(newCategory);
+      await categoryDocument.save();
+
+      console.log(
+        "you've added",
+        categoryDocument.name,
+        " to the list of categories."
+      );
+    };
+
     // Meny val 15
     const exitApp = async () => {
       console.log("GoodBye");
@@ -133,7 +154,7 @@ const main = async () => {
         await addProduct();
       } else if (input == "2") {
         console.log("Add new category");
-        //    funktion för att lägga till kategori
+        await addCategory();
       } else if (input == "3") {
         console.log("View products by category");
       } else if (input == "4") {
