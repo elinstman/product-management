@@ -16,56 +16,6 @@ const main = async () => {
     const addProduct = async () => {
       let product = p("Enter the name of the product: ");
 
-      //   console.log(
-      //     "Choose a supplier:",
-      //     "\n1. ElectroTech",
-      //     "\n2. GreenHarvest",
-      //     "\n3. TrailBlazeOutdoors"
-      //   );
-
-      //   let supplierChoice = parseInt(p("Enter the supplier-number: "));
-
-      //   let supplier;
-      //   switch (supplierChoice) {
-      //     case 1:
-      //       supplier = "ElectroTech";
-      //       break;
-      //     case 2:
-      //       supplier = "GreenHarvest";
-      //       break;
-      //     case 3:
-      //       supplier = "TrailBlazeOutdoors";
-      //       break;
-      //     default:
-      //       console.log("Invalid category choice. Defaulting to 'GreenHarvest'.");
-      //       category = "GreenHarvest";
-      //   }
-
-      //   console.log(
-      //     "Choose a category:",
-      //     "\n1. Electronics",
-      //     "\n2. Food & Beverage",
-      //     "\n3. Outdoor Gear"
-      //   );
-
-      //   let categoryChoice = parseInt(p("Enter the category-number: "));
-
-      //   let category;
-      //   switch (categoryChoice) {
-      //     case 1:
-      //       category = "Electronics";
-      //       break;
-      //     case 2:
-      //       category = "Food & Beverage";
-      //       break;
-      //     case 3:
-      //       category = "Outdoor Gear";
-      //       break;
-      //     default:
-      //       console.log("Invalid category choice. Defaulting to 'Electronics'.");
-      //       category = "Electronics";
-      //   }
-
       let supplier;
       while (!supplier) {
         console.log(
