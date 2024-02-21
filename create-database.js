@@ -104,7 +104,29 @@ const supplierModel = mongoose.model("suppliers", supplierSchema);
 const supplierCol = await db.createCollection("suppliers");
 
 // Lägg till leverantörer här!!
-let suppliers = await supplierCol.insertMany([]);
+let suppliers = await supplierCol.insertMany([
+  {
+    supplier: 1,
+    name: "ElectroTech",
+    description: "Specialiserad på elektroniska produkter",
+    email: "info@electrotech.com",
+    phone: 123456789,
+  },
+  {
+    supplier: 2,
+    name: "GreenHarvest",
+    description: "Levererar ekologiska livsmedel och produkter",
+    email: "contact@greenharvestorganic.com",
+    phone: 987654321,
+  },
+  {
+    supplier: 3,
+    name: "TrailBlazeOutdoors",
+    description: "Försäljare av utomhusutrustning och äventyrsprodukter",
+    email: "sales@trailblazeoutdoors.com",
+    phone: 555123456,
+  },
+]);
 
 // Offers
 const offerSchema = mongoose.Schema({
@@ -127,7 +149,7 @@ const offerModel = mongoose.model("offers", offerSchema);
 const offerCol = await db.createCollection("offers");
 
 // Lägg till offers här!!!
-let offers = await offerCol.insertMany([]);
+// let offers = await offerCol.insertMany([]);
 
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
@@ -149,4 +171,4 @@ const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 const salesOrderCol = await db.createCollection("sales-orders");
 
 // // Denna kommer vara tom tills användaren skapar ordrar
-let salesOrders = await salesOrderCol.insertMany([]);
+// let salesOrders = await salesOrderCol.insertMany([]);
