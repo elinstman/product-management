@@ -297,8 +297,9 @@ const main = async () => {
       console.log(
         "--------------------------------------------------------------------------------\n",
         "Menue:",
-        "\n1. View all products",
-        "\n2. Add new product",
+        "\n0. View all products",
+        "\n1. Add new product",
+        "\n2. Add new category",
         "\n3. View products by category",
         "\n4. View products by supplier",
         "\n5. View all offers within a price range",
@@ -317,12 +318,14 @@ const main = async () => {
 
       let input = p("Make a choice by entering a number: ");
 
-      if (input == "1") {
-        console.log("Add new category");
+      if (input == "0"){
         await viewAllProducts();
-      } else if (input == "2") {
+      } else if (input == "1"){
         console.log("Add new product");
         await addProduct();
+      } else if (input == "2") {
+        console.log("Add new category");
+        await addCategory();
       } else if (input == "3") {
         console.log("View products by category");
       } else if (input == "4") {
