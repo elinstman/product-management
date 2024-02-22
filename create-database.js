@@ -206,8 +206,6 @@ if (offerCountPre === 0) {
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
   orderNumber: { type: Number },
-  status: { type: Boolean },
-  offerNumber: { type: Number },
   products: {
     type: [
       {
@@ -216,6 +214,11 @@ const salesOrderSchema = mongoose.Schema({
       },
     ],
   },
+  totalPrice: { type: Number },
+  totalCost: { type: Number },
+  totalProfit: { type: Number },
+  shipped: { type: Boolean },
+  pending: { type: Boolean },
 });
 
 const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
