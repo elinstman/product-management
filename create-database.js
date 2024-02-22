@@ -145,7 +145,7 @@ const offerSchema = mongoose.Schema({
   offernumber: { type: Number },
   active: { type: Boolean },
   offerName: { type: String },
-  offerDesription: { type: String },
+  offerDescription: { type: String },
   products: {
     type: [
       {
@@ -167,7 +167,7 @@ let offers = [
     offernumber: 1,
     active: true,
     offerName: "Sportlovsrea 2024",
-    offerDesription: "10% rabatt på ordinarie priser",
+    offerDescription: "10% rabatt på ordinarie priser",
     products: [
       { productName: "Laptop X1", productPrice: 1199.99 },
       { productName: "Smart Fitness Tracker", productPrice: 69.99 },
@@ -179,7 +179,7 @@ let offers = [
     offernumber: 2,
     active: true,
     offerName: "Höstspecial 2024",
-    offerDesription: "15% rabatt på ordinarie priser",
+    offerDescription: "15% rabatt på ordinarie priser",
     products: [
       { productName: "Organic Coffee Beans", productPrice: 15.99 },
       { productName: "Artisanal Chocolate Box", productPrice: 24.99 },
@@ -191,7 +191,7 @@ let offers = [
     offernumber: 3,
     active: false,
     offerName: "Outdoorpack 2024",
-    offerDesription: "20% rabatt på ordinarie priser",
+    offerDescription: "20% rabatt på ordinarie priser",
     products: [
       { productName: "Smart Fitness Tracker", productPrice: 59.99 },
       { productName: "Outdoor Adventure Backpack", productPrice: 34.99 },
