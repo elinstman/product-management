@@ -145,6 +145,7 @@ const offerSchema = mongoose.Schema({
   offernumber: { type: Number },
   active: { type: Boolean },
   offerName: { type: String },
+  offerDesription: { type: String },
   products: {
     type: [
       {
@@ -154,10 +155,10 @@ const offerSchema = mongoose.Schema({
     ],
     default: [],
   },
-  discount: { type: String },
+  offerPrice: { type: Number },
 });
 
-const offerModel = mongoose.model("offers", offerSchema);
+export const offerModel = mongoose.model("offers", offerSchema);
 
 const offerCol = await db.createCollection("offers");
 
@@ -166,34 +167,37 @@ let offers = [
     offernumber: 1,
     active: true,
     offerName: "Sportlovsrea 2024",
+    offerDesription: "10% rabatt på ordinarie priser",
     products: [
       { productName: "Laptop X1", productPrice: 1199.99 },
       { productName: "Smart Fitness Tracker", productPrice: 69.99 },
       { productName: "Outdoor Adventure Backpack", productPrice: 39.99 },
     ],
-    discount: "10%", // 10% rabatt på hela erbjudandet
+    offerPrice: 1179.0,
   },
   {
     offernumber: 2,
     active: true,
     offerName: "Höstspecial 2024",
+    offerDesription: "15% rabatt på ordinarie priser",
     products: [
       { productName: "Organic Coffee Beans", productPrice: 15.99 },
       { productName: "Artisanal Chocolate Box", productPrice: 24.99 },
       { productName: "Ultra Durable Thermos", productPrice: 19.99 },
     ],
-    discount: "15%", // 15% rabatt på hela erbjudandet
+    offerPrice: 50.0,
   },
   {
     offernumber: 3,
     active: false,
     offerName: "Outdoorpack 2024",
+    offerDesription: "20% rabatt på ordinarie priser",
     products: [
       { productName: "Smart Fitness Tracker", productPrice: 59.99 },
       { productName: "Outdoor Adventure Backpack", productPrice: 34.99 },
       { productName: "Ultra Durable Thermos", productPrice: 24.99 },
     ],
-    discount: "20%", // 20% rabatt på hela erbjudandet
+    offerPrice: 95.0,
   },
 ];
 
