@@ -3,6 +3,7 @@ import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
 import { categoryModel } from "./create-database.js";
 import { salesOrderModel } from "./create-database.js";
+import { offerModel } from "./create-database.js"
 
 const main = async () => {
     try {
@@ -179,6 +180,103 @@ const main = async () => {
             }
         }
 
+        // 7
+        //----------------------------------------------------------------------------------------------------
+        const countOffersByStock = async(productsDatabase, offersDatabase) => {
+            let allProductsInStock = 0;
+            let someProductsInStock = 0;
+            let noProductsInStock = 0;
+          
+            offersDatabase.forEach((offer) => {
+              let allProductsAvailable = true;
+          
+              offer.products.forEach((offerProduct) => {
+                const product = productsDatabase.find((p) => p.product === offerProduct.productName);
+          
+                if (product && product.stock > 0) {
+                  someProductsInStock++;
+                } else {
+                  allProductsAvailable = false;
+                }
+              });
+          
+              if (allProductsAvailable) {
+                allProductsInStock++;
+              } else {
+                noProductsInStock++;
+              }
+            });
+          
+            console.log("Number of offers with all products in stock:", allProductsInStock);
+            console.log("Number of offers with some products in stock:", someProductsInStock);
+            console.log("Number of offers with no products in stock:", noProductsInStock);
+          }
+        // const countOffersByStock = async () => {
+        //     const pipeline = [
+        //       {
+        //         $unwind: "$products",
+        //       },
+        //       {
+        //         $lookup: {
+        //           from: "productModel", // Mongoose-modellens namn för dina produktobjekt
+        //           localField: "products.productName",
+        //           foreignField: "product",
+        //           as: "matchedProduct",
+        //         },
+        //       },
+        //       {
+        //         $unwind: "$matchedProduct",
+        //       },
+        //       {
+        //         $group: {
+        //           _id: "$_id",
+        //           offerName: { $first: "$offerName" },
+        //           allProductsInStock: {
+        //             $sum: {
+        //               $cond: {
+        //                 if: { $gt: ["$matchedProduct.stock", 0] },
+        //                 then: 1,
+        //                 else: 0,
+        //               },
+        //             },
+        //           },
+        //           totalProducts: { $sum: 1 },
+        //         },
+        //       },
+        //       {
+        //         $project: {
+        //           offerName: 1,
+        //           allProductsInStock: 1,
+        //           someProductsInStock: {
+        //             $cond: {
+        //               if: { $eq: ["$allProductsInStock", "$totalProducts"] },
+        //               then: 0,
+        //               else: 1,
+        //             },
+        //           },
+        //           noProductsInStock: {
+        //             $cond: {
+        //               if: { $eq: ["$allProductsInStock", 0] },
+        //               then: 1,
+        //               else: 0,
+        //             },
+        //           },
+        //         },
+        //       },
+        //       {
+        //         $group: {
+        //           _id: null,
+        //           totalAllProductsInStock: { $sum: "$allProductsInStock" },
+        //           totalSomeProductsInStock: { $sum: "$someProductsInStock" },
+        //           totalNoProductsInStock: { $sum: "$noProductsInStock" },
+        //         },
+        //       },
+        //     ];
+          
+        //     const result = await offerModel.aggregate(pipeline);
+        //     console.log(result[0]);
+        //   };
+        //----------------------------------------------------------------------------------------------------
         // 8
         //----------------------------------------------------------------------------------------------------
         const createOrder = async () => {
@@ -306,9 +404,10 @@ const main = async () => {
                     "View all offers that contain a product from a specific category"
                 );
             } else if (input == "7") {
-                console.log(
-                    "View the number of offers based on the number of its products in stock"
-                );
+                console.log("View the number of offers based on the number of its products in stock");
+                const productsDatabase = await productModel.find({});
+                const offersDatabase = await offerModel.find({});
+                await countOffersByStock(productsDatabase, offersDatabase);
             } else if (input == "8") {
                 console.log("Create order for products");
                 await createOrder();

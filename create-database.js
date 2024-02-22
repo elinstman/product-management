@@ -157,7 +157,7 @@ const offerSchema = mongoose.Schema({
   discount: { type: String },
 });
 
-const offerModel = mongoose.model("offers", offerSchema);
+export const offerModel = mongoose.model("offers", offerSchema);
 
 const offerCol = await db.createCollection("offers");
 
