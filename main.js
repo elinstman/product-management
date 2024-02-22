@@ -2,6 +2,7 @@ import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
 import { categoryModel } from "./create-database.js";
+import { offerModel } from "./create-database.js";
 
 const main = async () => {
   try {
@@ -112,6 +113,93 @@ const main = async () => {
       );
     };
 
+    // Meny val 5 (Elin jobbar här)
+    const filterOffersByPrice = async (minPrice, maxPrice) => {
+      try {
+        const offers = await offerModel.find({
+          $match: {
+            $and: [
+              { offerPrice: { $gte: minPrice } },
+              { offerPrice: { $lte: maxPrice } },
+              { active: true },
+            ],
+          },
+        });
+        return offers;
+      } catch (error) {
+        console.error("Error filtering offers by price:", error);
+        return [];
+      }
+    };
+
+    const filteroffers = async () => {
+      try {
+        console.log(
+          "Price ranges:",
+          "\n1. 10-50",
+          "\n2. 1-100",
+          "\n3. 51-100",
+          "\n4. 100-2000"
+        );
+
+        let offerChoice = parseInt(
+          p("Enter the number of your desired price range: ")
+        );
+
+        let minPrice, maxPrice;
+
+        switch (offerChoice) {
+          case 1:
+            minPrice = 10;
+            maxPrice = 50;
+            break;
+          case 2:
+            minPrice = 1;
+            maxPrice = 100;
+            break;
+          case 3:
+            minPrice = 51;
+            maxPrice = 100;
+            break;
+          case 4:
+            minPrice = 100;
+            maxPrice = 2000;
+            break;
+          default:
+            console.log(
+              "Invalid choice. Please enter a number between 1 and 4."
+            );
+            return;
+        }
+
+        const offerByPrice = await filterOffersByPrice(minPrice, maxPrice);
+
+        if (offerByPrice.length > 0) {
+          console.log("Here are the offers that match your price range:");
+          offerByPrice.forEach((offer) => {
+            if (offer.active) {
+              console.log("Offer Name:", offer.offerName);
+              console.log("Description:", offer.offerDescription); // Rättstavning av offerDesription till offerDescription
+              console.log("Products:");
+              offer.products.forEach((product) => {
+                console.log(
+                  `- ${product.productName}: ${product.productPrice}`
+                );
+              });
+              console.log("Offer Price:", offer.offerPrice);
+              console.log("--------------------");
+            } else {
+              console.log("Offer", offer.offerName, "is not active.");
+            }
+          });
+        } else {
+          console.log("No offers match the specified price range.");
+        }
+      } catch (error) {
+        console.error("Error filtering offers:", error);
+      }
+    };
+
     // Meny val 15
     const exitApp = async () => {
       console.log("GoodBye");
@@ -161,6 +249,7 @@ const main = async () => {
         console.log("View products by supplier");
       } else if (input == "5") {
         console.log("View all offers within a price range");
+        await filteroffers();
       } else if (input == "6") {
         console.log(
           "View all offers that contain a product from a specific category"
