@@ -161,7 +161,7 @@ const offerModel = mongoose.model("offers", offerSchema);
 
 const offerCol = await db.createCollection("offers");
 
-let offers = await offerCol.insertMany([
+let offers = [
   {
     offernumber: 1,
     active: true,
@@ -195,7 +195,13 @@ let offers = await offerCol.insertMany([
     ],
     discount: "20%", // 20% rabatt på hela erbjudandet
   },
-]);
+];
+
+const offerCountPre = await offerModel.countDocuments();
+
+if (offerCountPre === 0) {
+  await offerCol.insertMany(offerCountPre);
+}
 
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
@@ -215,3 +221,4 @@ const salesOrderSchema = mongoose.Schema({
 const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 
 const salesOrderCol = await db.createCollection("sales-orders");
+
