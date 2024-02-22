@@ -98,35 +98,31 @@ if (productCountPre === 0) {
 
 // Suppliers
 const supplierSchema = mongoose.Schema({
-  supplier: { type: Number },
   name: { type: String },
   description: { type: String },
   email: { type: String },
   phone: { type: Number },
 });
 
-const supplierModel = mongoose.model("suppliers", supplierSchema);
+export const supplierModel = mongoose.model("suppliers", supplierSchema);
 
 const supplierCol = await db.createCollection("suppliers");
 
 // Lägg till leverantörer här!!
 const suppliers = [
   {
-    supplier: 1,
     name: "ElectroTech",
     description: "Specialiserad på elektroniska produkter",
     email: "info@electrotech.com",
     phone: 123456789,
   },
   {
-    supplier: 2,
     name: "GreenHarvest",
     description: "Levererar ekologiska livsmedel och produkter",
     email: "contact@greenharvestorganic.com",
     phone: 987654321,
   },
   {
-    supplier: 3,
     name: "TrailBlazeOutdoors",
     description: "Försäljare av utomhusutrustning och äventyrsprodukter",
     email: "sales@trailblazeoutdoors.com",

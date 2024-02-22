@@ -3,6 +3,7 @@ import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
 import { categoryModel } from "./create-database.js";
 import { offerModel } from "./create-database.js";
+import { supplierModel } from "./create-database.js";
 
 const main = async () => {
   try {
@@ -275,6 +276,40 @@ const main = async () => {
       }
     };
 
+    // ---------------------------------------------------------------------------------
+    // Meny val 11
+    const addSupplier = async () => {
+      let name = p("Enter the supplier name: ");
+      let description = p("Enter the supplier description: ");
+      let email = p("Enter the supplier email: ");
+      let phone = p("Enter the supplier phonenumber: ");
+
+      const newSupplier = {
+        name: name,
+        description: description,
+        email: email,
+        phone: phone,
+      };
+
+      const supplierDocument = new supplierModel(newSupplier);
+      await supplierDocument.save();
+
+      console.log(
+        "you've added",
+        supplierDocument.name,
+        " to the list of suppliers."
+      );
+    };
+
+    // -------------------------------------------------------------------------------
+    // Meny val 12
+    const viewAllSuppliers = async () => {
+      const allSuppliers = await supplierModel.find({});
+      console.log(allSuppliers);
+    };
+
+    // -------------------------------------------------------------------------------
+
     // Meny val 15
     const exitApp = async () => {
       console.log("GoodBye");
@@ -341,8 +376,10 @@ const main = async () => {
         console.log("Ship orders");
       } else if (input == "11") {
         console.log("Add a new supplier");
+        await addSupplier();
       } else if (input == "12") {
         console.log("View suppliers");
+        await viewAllSuppliers();
       } else if (input == "13") {
         console.log("View all sales");
       } else if (input == "14") {
