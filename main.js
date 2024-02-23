@@ -2,12 +2,14 @@ import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
 import { productModel } from "./create-database.js";
 import { categoryModel } from "./create-database.js";
+import { offerModel } from "./create-database.js";
+import { supplierModel } from "./create-database.js";
 import { salesOrderModel } from "./create-database.js";
 import { offerModel } from "./create-database.js"
 
 const main = async () => {
-    try {
-        await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
+  try {
+    await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
         // Meny val 0
         const viewAllProducts = async () => {
@@ -84,101 +86,97 @@ const main = async () => {
                 stock: stock,
             };
 
-            const productDocument = new productModel(newProduct);
-            await productDocument.save();
+      const productDocument = new productModel(newProduct);
+      await productDocument.save();
 
-            console.log(
-                "you've added",
-                productDocument.product,
-                " to the list of products."
-            );
-        };
+      console.log(
+        "you've added",
+        productDocument.product,
+        " to the list of products."
+      );
+    };
 
-        // 3
-        const filterByCategory = async (value) => {
-            const productsByCategory = await productModel.aggregate(
-                [
-                    { $match: { "category.name": value } },
-                ]
-            )
-            console.log(productsByCategory)
-        }
+    // 3
+    const filterByCategory = async (value) => {
+      const productsByCategory = await productModel.aggregate([
+        { $match: { "category.name": value } },
+      ]);
+      console.log(productsByCategory);
+    };
 
-        const viewProductsByCategory = async () => {
-            console.log("wich category would you like to view by?");
+    const viewProductsByCategory = async () => {
+      console.log("wich category would you like to view by?");
 
-            const categories = await productModel.aggregate([
-                {
-                    $group: { _id: "$category.name" },
-                },
-                {
-                    $project: { _id: 0, category: "$_id" },
-                },
-            ]);
+      const categories = await productModel.aggregate([
+        {
+          $group: { _id: "$category.name" },
+        },
+        {
+          $project: { _id: 0, category: "$_id" },
+        },
+      ]);
 
-            categories.map((category, i) => {
-                console.log(i++, ". ", category.category);
-            })
+      categories.map((category, i) => {
+        console.log(i++, ". ", category.category);
+      });
 
-            const chosenCategory = p("Enter the corresponding number: ")
+      const chosenCategory = p("Enter the corresponding number: ");
 
-            switch (chosenCategory) {
-                case "0":
-                    await filterByCategory("Electronics")
-                    break;
-                case "1":
-                    await filterByCategory("Food & Beverage")
-                    break;
-                case "2":
-                    await filterByCategory("Outdoor Gear")
-                    break;
-                default:
-                    console.log("error, wrong input.")
-            }
-        }
+      switch (chosenCategory) {
+        case "0":
+          await filterByCategory("Electronics");
+          break;
+        case "1":
+          await filterByCategory("Food & Beverage");
+          break;
+        case "2":
+          await filterByCategory("Outdoor Gear");
+          break;
+        default:
+          console.log("error, wrong input.");
+      }
+    };
 
-        //4
-        const filterBySupplier = async (chosenSupplier) => {
-            const productsBySupplier = await productModel.aggregate(
-                [
-                    { $match: { supplier: chosenSupplier } },
-                ]
-            )
-            console.log(productsBySupplier)
-        }
+    //4
+    const filterBySupplier = async (chosenSupplier) => {
+      const productsBySupplier = await productModel.aggregate([
+        { $match: { supplier: chosenSupplier } },
+      ]);
+      console.log(productsBySupplier);
+    };
 
-        const viewProductsBySupplier = async () => {
-            console.log("wich supplier would you like to view by?");
+    const viewProductsBySupplier = async () => {
+      console.log("wich supplier would you like to view by?");
 
-            const suppliers = await productModel.aggregate([
-                {
-                    $group: { _id: "$supplier" },
-                },
-                {
-                    $project: { _id: 0, supplier: "$_id" },
-                },
-            ]);
+      const suppliers = await productModel.aggregate([
+        {
+          $group: { _id: "$supplier" },
+        },
+        {
+          $project: { _id: 0, supplier: "$_id" },
+        },
+      ]);
 
-            suppliers.map((supplier, i) => {
-                console.log(i++, ". ", supplier.supplier);
-            })
-            //bättre att be användaren skriva namnet?
-            const chosenSupplier = p("Enter the corresponding number: ")
+      suppliers.map((supplier, i) => {
+        console.log(i++, ". ", supplier.supplier);
+      });
+      //bättre att be användaren skriva namnet?
+      const chosenSupplier = p("Enter the corresponding number: ");
 
-            switch (chosenSupplier) {
-                case "0":
-                    await filterBySupplier("ElectroTech")
-                    break;
-                case "1":
-                    await filterBySupplier("GreenHarvest")
-                    break;
-                case "2":
-                    await filterBySupplier("TrailBlazeOutdoors")
-                    break;
-                default:
-                    console.log("error, wrong input.")
-            }
-        }
+      switch (chosenSupplier) {
+        case "0":
+          await filterBySupplier("ElectroTech");
+          break;
+        case "1":
+          await filterBySupplier("GreenHarvest");
+          break;
+        case "2":
+          await filterBySupplier("TrailBlazeOutdoors");
+          break;
+        default:
+          console.log("error, wrong input.");
+      }
+    };
 
         // 7
         //----------------------------------------------------------------------------------------------------
@@ -347,92 +345,209 @@ const main = async () => {
             const categoryDocument = new categoryModel(newCategory);
             await categoryDocument.save();
 
+      console.log(
+        "you've added",
+        categoryDocument.name,
+        " to the list of categories."
+      );
+    };
+
+    // Meny val 5 (Elin jobbar här)
+    const filterOffersByPrice = async (minPrice, maxPrice) => {
+      try {
+        const offers = await offerModel.find({
+          $and: [
+            { offerPrice: { $gte: minPrice } },
+            { offerPrice: { $lte: maxPrice } },
+          ],
+        });
+        return offers;
+      } catch (error) {
+        console.error("Error filtering offers by price:", error);
+        return [];
+      }
+    };
+
+    const filteroffers = async () => {
+      try {
+        console.log(
+          "Price ranges:",
+          "\n1. 10-50",
+          "\n2. 1-100",
+          "\n3. 51-100",
+          "\n4. 100-2000"
+        );
+
+        let offerChoice = parseInt(
+          p("Enter the number of your desired price range: ")
+        );
+
+        let minPrice, maxPrice;
+
+        switch (offerChoice) {
+          case 1:
+            minPrice = 10;
+            maxPrice = 50;
+            break;
+          case 2:
+            minPrice = 1;
+            maxPrice = 100;
+            break;
+          case 3:
+            minPrice = 51;
+            maxPrice = 100;
+            break;
+          case 4:
+            minPrice = 100;
+            maxPrice = 2000;
+            break;
+          default:
             console.log(
-                "you've added",
-                categoryDocument.name,
-                " to the list of categories."
+              "Invalid choice. Please enter a number between 1 and 4."
             );
-        };
-
-        // Meny val 15
-        const exitApp = async () => {
-            console.log("GoodBye");
-            runApp = false;
-        };
-
-        const p = propmpt();
-        let runApp = true;
-
-        while (runApp) {
-            console.log(
-                "--------------------------------------------------------------------------------\n",
-                "Menue:",
-                "\n1. View all products",
-                "\n2. Add new product",
-                "\n3. View products by category",
-                "\n4. View products by supplier",
-                "\n5. View all offers within a price range",
-                "\n6. View all offers that contain a product from a specific category",
-                "\n7. View the number of offers based on the number of its products in stock",
-                "\n8. Create order for products",
-                "\n9. Create order for offers",
-                "\n10. Ship orders",
-                "\n11. Add a new supplier",
-                "\n12. View suppliers",
-                "\n13. View all sales",
-                "\n14. View sum of all profits",
-                "\n15. Exit",
-                "\n--------------------------------------------------------------------------------"
-            );
-
-            let input = p("Make a choice by entering a number: ");
-
-            if (input == "1") {
-                console.log("Add new category");
-                await viewAllProducts();
-            } else if (input == "2") {
-                console.log("Add new product");
-                await addProduct();
-            } else if (input == "3") {
-                console.log("View products by category");
-            } else if (input == "4") {
-                console.log("View products by supplier");
-            } else if (input == "5") {
-                console.log("View all offers within a price range");
-            } else if (input == "6") {
-                console.log(
-                    "View all offers that contain a product from a specific category"
-                );
-            } else if (input == "7") {
-                console.log("View the number of offers based on the number of its products in stock");
-                const productsDatabase = await productModel.find({});
-                const offersDatabase = await offerModel.find({});
-                await countOffersByStock(productsDatabase, offersDatabase);
-            } else if (input == "8") {
-                console.log("Create order for products");
-                await createOrder();
-            } else if (input == "9") {
-                console.log("Create order for offers");
-            } else if (input == "10") {
-                console.log("Ship orders");
-            } else if (input == "11") {
-                console.log("Add a new supplier");
-            } else if (input == "12") {
-                console.log("View suppliers");
-            } else if (input == "13") {
-                console.log("View all sales");
-            } else if (input == "14") {
-                console.log("View sum of all profits");
-            } else if (input == "15") {
-                await exitApp();
-            } else {
-                console.log("Invalid option. Choose a number between 1-15");
-            }
+            return;
         }
-    } catch (error) {
-        console.error("An error occurred:", error);
-    } finally {
-        await mongoose.connection.close();
+
+        const offerByPrice = await filterOffersByPrice(minPrice, maxPrice);
+
+        if (offerByPrice.length > 0) {
+          console.log("Here are the offers that match your price range:");
+          offerByPrice.forEach((offer) => {
+            console.log("Offer Name:", offer.offerName);
+            console.log("Description:", offer.offerDescription);
+            console.log("Products:");
+            offer.products.forEach((product) => {
+              console.log(`- ${product.productName}: ${product.productPrice}`);
+            });
+            console.log("Offer Price:", offer.offerPrice);
+            console.log("--------------------");
+          });
+        } else {
+          console.log("No offers match the specified price range.");
+        }
+      } catch (error) {
+        console.error("Error filtering offers:", error);
+      }
+    };
+
+    // ---------------------------------------------------------------------------------
+    // Meny val 11
+    const addSupplier = async () => {
+      let name = p("Enter the supplier name: ");
+      let description = p("Enter the supplier description: ");
+      let email = p("Enter the supplier email: ");
+      let phone = p("Enter the supplier phonenumber: ");
+
+      const newSupplier = {
+        name: name,
+        description: description,
+        email: email,
+        phone: phone,
+      };
+
+      const supplierDocument = new supplierModel(newSupplier);
+      await supplierDocument.save();
+
+      console.log(
+        "you've added",
+        supplierDocument.name,
+        " to the list of suppliers."
+      );
+    };
+
+    // -------------------------------------------------------------------------------
+    // Meny val 12
+    const viewAllSuppliers = async () => {
+      const allSuppliers = await supplierModel.find({});
+      console.log(allSuppliers);
+    };
+
+    // -------------------------------------------------------------------------------
+
+    // Meny val 15
+    const exitApp = async () => {
+      console.log("GoodBye");
+      runApp = false;
+    };
+
+    const p = propmpt();
+    let runApp = true;
+
+    while (runApp) {
+      console.log(
+        "--------------------------------------------------------------------------------\n",
+        "Menue:",
+        "\n0. View all products",
+        "\n1. Add new product",
+        "\n2. Add new category",
+        "\n3. View products by category",
+        "\n4. View products by supplier",
+        "\n5. View all offers within a price range",
+        "\n6. View all offers that contain a product from a specific category",
+        "\n7. View the number of offers based on the number of its products in stock",
+        "\n8. Create order for products",
+        "\n9. Create order for offers",
+        "\n10. Ship orders",
+        "\n11. Add a new supplier",
+        "\n12. View suppliers",
+        "\n13. View all sales",
+        "\n14. View sum of all profits",
+        "\n15. Exit",
+        "\n--------------------------------------------------------------------------------"
+      );
+
+      let input = p("Make a choice by entering a number: ");
+
+      if (input == "0") {
+        console.log("View all products");
+        await viewAllProducts();
+      } else if (input == "1") {
+        console.log("Add new product");
+        await addProduct();
+      } else if (input == "2") {
+        console.log("Add new category");
+        await addCategory();
+      } else if (input == "3") {
+        console.log("View products by category");
+      } else if (input == "4") {
+        console.log("View products by supplier");
+      } else if (input == "5") {
+        console.log("View all offers within a price range");
+        await filteroffers();
+      } else if (input == "6") {
+        console.log(
+          "View all offers that contain a product from a specific category"
+        );
+      } else if (input == "7") {
+        console.log(
+          "View the number of offers based on the number of its products in stock"
+        );
+      } else if (input == "8") {
+        console.log("Create order for products");
+      } else if (input == "9") {
+        console.log("Create order for offers");
+      } else if (input == "10") {
+        console.log("Ship orders");
+      } else if (input == "11") {
+        console.log("Add a new supplier");
+        await addSupplier();
+      } else if (input == "12") {
+        console.log("View suppliers");
+        await viewAllSuppliers();
+      } else if (input == "13") {
+        console.log("View all sales");
+      } else if (input == "14") {
+        console.log("View sum of all profits");
+      } else if (input == "15") {
+        await exitApp();
+      } else {
+        console.log("Invalid option. Choose a number between 1-15");
+      }
     }
+  } catch (error) {
+    console.error("An error occurred:", error);
+  } finally {
+    await mongoose.connection.close();
+  }
 };
 main();
