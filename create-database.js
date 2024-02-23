@@ -206,6 +206,7 @@ if (offerCountPre === 0) {
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
   orderNumber: { type: Number },
+  orderType: { type: String },
   dateOfOrder: { type: Date, default: Date.now() },
   products: {
     type: [
