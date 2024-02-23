@@ -152,6 +152,7 @@ const offerSchema = mongoose.Schema({
     default: [],
   },
   offerPrice: { type: Number },
+  offerCost: { type: Number },
 });
 
 export const offerModel = mongoose.model("offers", offerSchema);
@@ -170,6 +171,7 @@ let offers = [
       { productName: "Outdoor Adventure Backpack", productPrice: 39.99 },
     ],
     offerPrice: 1179.0,
+    offerCost: 984.97,
   },
   {
     offernumber: 2,
@@ -182,6 +184,7 @@ let offers = [
       { productName: "Ultra Durable Thermos", productPrice: 19.99 },
     ],
     offerPrice: 50.0,
+    offerCost: 48.97,
   },
   {
     offernumber: 3,
@@ -194,6 +197,7 @@ let offers = [
       { productName: "Ultra Durable Thermos", productPrice: 24.99 },
     ],
     offerPrice: 95.0,
+    offerCost: 101.97,
   },
 ];
 
