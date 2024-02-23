@@ -363,6 +363,7 @@ const main = async () => {
 
       const newSalesOrder = await new salesOrderModel({
         orderNumber: (await salesOrderModel.countDocuments()) + 1,
+        orderType: "product-order",
         dateOfOrder: Date(Date.now()),
         products: selectedProducts,
         totalPrice: totalPrice,
@@ -379,7 +380,44 @@ const main = async () => {
         .catch((err) => console.log(err));
     };
     //----------------------------------------------------------------------------------------------------
+    // Meny val 9
+    const createOfferOrder = async () => {
+      console.log("Here are avaliable offers!");
 
+      const allOffers = await offerModel.find({});
+
+      allOffers.forEach(async (offer, i) => {
+        const offerProducts = offer.products.map((offerProduct) => {
+          return `${offerProduct.productName}, Price/Unit - $${offerProduct.productPrice}`;
+        });
+
+        console.log(
+          i,
+          ". ",
+          offer.offerName,
+          "DEAL: ",
+          offer.offerPrice + "$ ",
+          "\n You get: : ",
+          offerProducts
+        );
+      });
+
+      const choosenOffer = p(
+        "Enter the corresponding number of the offer you want: "
+      );
+
+      let chosenOfferIndex = parseInt(choosenOffer);
+
+      if (chosenOfferIndex >= 0 && chosenOfferIndex < allOffers.length) {
+        const offerQuantity = parseInt(
+          p(
+            `How many of ${allOffers[chosenOfferIndex].offerName} would you like to add to your order? `
+          )
+        );
+      }
+    };
+
+    // ---------------------------------------------------------------------------------------------------------------
     // Meny val 2 (Elin jobbar här)
     const addCategory = async () => {
       let name = p("Enter the category name: ");
@@ -577,6 +615,7 @@ const main = async () => {
         await createOrder();
       } else if (input == "9") {
         console.log("Create order for offers");
+        await createOfferOrder();
       } else if (input == "10") {
         console.log("Ship orders");
       } else if (input == "11") {
