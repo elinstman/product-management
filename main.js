@@ -177,8 +177,12 @@ const main = async () => {
       }
     };
 
-    // 7
-    //----------------------------------------------------------------------------------------------------
+    //7
+   
+
+
+    // 7 (test)
+    // ----------------------------------------------------------------------------------------------------
     const countOffersByStock = async (productsDatabase, offersDatabase) => {
       let allProductsInStock = 0;
       let someProductsInStock = 0;
@@ -188,6 +192,7 @@ const main = async () => {
         let allProductsAvailable = true;
 
         offer.products.forEach((offerProduct) => {
+
           const product = productsDatabase.find(
             (p) => p.product === offerProduct.productName
           );
@@ -400,6 +405,35 @@ const main = async () => {
       );
     };
 
+    //------------------------------------------------------------------------------------------------------
+    const shipOrder = async () => {
+        //choose order to ship 
+        const pendingOders = await salesOrderModel.aggregate([
+            { $match: { "status": "pending" } },
+          ]);
+
+          if (!pendingOders.length){
+              console.log('No orders are available for shipping');
+              return;
+          } else{
+            console.log("wich order would you like to ship?")
+
+            pendingOders.forEach((order, i)=>{
+                console.log("order ", order.orderNumber, " containering: ", order.products )
+            })
+
+            const orderNumber = p("choose by entering order number: ")
+            // console.log(order)
+            const chosenOrder = await salesOrderModel.findOne({ orderNumber: orderNumber})
+            if(chosenOrder === null){
+                console.log("Invalid Order Number");
+                return;
+            } 
+          }
+
+    }
+    //------------------------------------------------------------------------------------------------------
+
     // Meny val 5 (Elin jobbar här)
     const filterOffersByPrice = async (minPrice, maxPrice) => {
       try {
@@ -579,6 +613,7 @@ const main = async () => {
         console.log("Create order for offers");
       } else if (input == "10") {
         console.log("Ship orders");
+        await shipOrder()
       } else if (input == "11") {
         console.log("Add a new supplier");
         await addSupplier();
