@@ -5,86 +5,85 @@ import { categoryModel } from "./create-database.js";
 import { offerModel } from "./create-database.js";
 import { supplierModel } from "./create-database.js";
 import { salesOrderModel } from "./create-database.js";
-import { offerModel } from "./create-database.js"
 
 const main = async () => {
   try {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-        // Meny val 0
-        const viewAllProducts = async () => {
-            const allProducts = await productModel.find({});
-            console.log(allProducts);
-        };
+    // Meny val 0
+    const viewAllProducts = async () => {
+      const allProducts = await productModel.find({});
+      console.log(allProducts);
+    };
 
-        // Meny val 1 (Elin jobbar här)
-        const addProduct = async () => {
-            let product = p("Enter the name of the product: ");
+    // Meny val 1 (Elin jobbar här)
+    const addProduct = async () => {
+      let product = p("Enter the name of the product: ");
 
-            let supplier;
-            while (!supplier) {
-                console.log(
-                    "Choose a supplier:",
-                    "\n1. ElectroTech",
-                    "\n2. GreenHarvest",
-                    "\n3. TrailBlazeOutdoors"
-                );
-                let supplierChoice = parseInt(p("Enter the supplier-number: "));
-                switch (supplierChoice) {
-                    case 1:
-                        supplier = "ElectroTech";
-                        break;
-                    case 2:
-                        supplier = "GreenHarvest";
-                        break;
-                    case 3:
-                        supplier = "TrailBlazeOutdoors";
-                        break;
-                    default:
-                        console.log(
-                            "Invalid supplier choice. Please enter a valid supplier number."
-                        );
-                }
-            }
+      let supplier;
+      while (!supplier) {
+        console.log(
+          "Choose a supplier:",
+          "\n1. ElectroTech",
+          "\n2. GreenHarvest",
+          "\n3. TrailBlazeOutdoors"
+        );
+        let supplierChoice = parseInt(p("Enter the supplier-number: "));
+        switch (supplierChoice) {
+          case 1:
+            supplier = "ElectroTech";
+            break;
+          case 2:
+            supplier = "GreenHarvest";
+            break;
+          case 3:
+            supplier = "TrailBlazeOutdoors";
+            break;
+          default:
+            console.log(
+              "Invalid supplier choice. Please enter a valid supplier number."
+            );
+        }
+      }
 
-            let category;
-            while (!category) {
-                console.log(
-                    "Choose a category:",
-                    "\n1. Electronics",
-                    "\n2. Food & Beverage",
-                    "\n3. Outdoor Gear"
-                );
-                let categoryChoice = parseInt(p("Enter the category-number: "));
-                switch (categoryChoice) {
-                    case 1:
-                        category = "Electronics";
-                        break;
-                    case 2:
-                        category = "Food & Beverage";
-                        break;
-                    case 3:
-                        category = "Outdoor Gear";
-                        break;
-                    default:
-                        console.log(
-                            "Invalid category choice. Please enter a valid category number."
-                        );
-                }
-            }
+      let category;
+      while (!category) {
+        console.log(
+          "Choose a category:",
+          "\n1. Electronics",
+          "\n2. Food & Beverage",
+          "\n3. Outdoor Gear"
+        );
+        let categoryChoice = parseInt(p("Enter the category-number: "));
+        switch (categoryChoice) {
+          case 1:
+            category = "Electronics";
+            break;
+          case 2:
+            category = "Food & Beverage";
+            break;
+          case 3:
+            category = "Outdoor Gear";
+            break;
+          default:
+            console.log(
+              "Invalid category choice. Please enter a valid category number."
+            );
+        }
+      }
 
-            let price = p("Enter the product price: ");
-            let cost = p("Enter the product cost: ");
-            let stock = p("Enter stock quantity: ");
+      let price = p("Enter the product price: ");
+      let cost = p("Enter the product cost: ");
+      let stock = p("Enter stock quantity: ");
 
-            const newProduct = {
-                product: product,
-                supplier: supplier,
-                category: category,
-                price: price,
-                cost: cost,
-                stock: stock,
-            };
+      const newProduct = {
+        product: product,
+        supplier: supplier,
+        category: category,
+        price: price,
+        cost: cost,
+        stock: stock,
+      };
 
       const productDocument = new productModel(newProduct);
       await productDocument.save();
@@ -178,172 +177,221 @@ const main = async () => {
       }
     };
 
-        // 7
-        //----------------------------------------------------------------------------------------------------
-        const countOffersByStock = async(productsDatabase, offersDatabase) => {
-            let allProductsInStock = 0;
-            let someProductsInStock = 0;
-            let noProductsInStock = 0;
-          
-            offersDatabase.forEach((offer) => {
-              let allProductsAvailable = true;
-          
-              offer.products.forEach((offerProduct) => {
-                const product = productsDatabase.find((p) => p.product === offerProduct.productName);
-          
-                if (product && product.stock > 0) {
-                  someProductsInStock++;
-                } else {
-                  allProductsAvailable = false;
-                }
-              });
-          
-              if (allProductsAvailable) {
-                allProductsInStock++;
-              } else {
-                noProductsInStock++;
-              }
-            });
-          
-            console.log("Number of offers with all products in stock:", allProductsInStock);
-            console.log("Number of offers with some products in stock:", someProductsInStock);
-            console.log("Number of offers with no products in stock:", noProductsInStock);
+    // 7
+    //----------------------------------------------------------------------------------------------------
+    const countOffersByStock = async (productsDatabase, offersDatabase) => {
+      let allProductsInStock = 0;
+      let someProductsInStock = 0;
+      let noProductsInStock = 0;
+
+      offersDatabase.forEach((offer) => {
+        let allProductsAvailable = true;
+
+        offer.products.forEach((offerProduct) => {
+          const product = productsDatabase.find(
+            (p) => p.product === offerProduct.productName
+          );
+
+          if (product && product.stock > 0) {
+            someProductsInStock++;
+          } else {
+            allProductsAvailable = false;
           }
-        // const countOffersByStock = async () => {
-        //     const pipeline = [
-        //       {
-        //         $unwind: "$products",
-        //       },
-        //       {
-        //         $lookup: {
-        //           from: "productModel", // Mongoose-modellens namn för dina produktobjekt
-        //           localField: "products.productName",
-        //           foreignField: "product",
-        //           as: "matchedProduct",
-        //         },
-        //       },
-        //       {
-        //         $unwind: "$matchedProduct",
-        //       },
-        //       {
-        //         $group: {
-        //           _id: "$_id",
-        //           offerName: { $first: "$offerName" },
-        //           allProductsInStock: {
-        //             $sum: {
-        //               $cond: {
-        //                 if: { $gt: ["$matchedProduct.stock", 0] },
-        //                 then: 1,
-        //                 else: 0,
-        //               },
-        //             },
-        //           },
-        //           totalProducts: { $sum: 1 },
-        //         },
-        //       },
-        //       {
-        //         $project: {
-        //           offerName: 1,
-        //           allProductsInStock: 1,
-        //           someProductsInStock: {
-        //             $cond: {
-        //               if: { $eq: ["$allProductsInStock", "$totalProducts"] },
-        //               then: 0,
-        //               else: 1,
-        //             },
-        //           },
-        //           noProductsInStock: {
-        //             $cond: {
-        //               if: { $eq: ["$allProductsInStock", 0] },
-        //               then: 1,
-        //               else: 0,
-        //             },
-        //           },
-        //         },
-        //       },
-        //       {
-        //         $group: {
-        //           _id: null,
-        //           totalAllProductsInStock: { $sum: "$allProductsInStock" },
-        //           totalSomeProductsInStock: { $sum: "$someProductsInStock" },
-        //           totalNoProductsInStock: { $sum: "$noProductsInStock" },
-        //         },
-        //       },
-        //     ];
-          
-        //     const result = await offerModel.aggregate(pipeline);
-        //     console.log(result[0]);
-        //   };
-        //----------------------------------------------------------------------------------------------------
-        // 8
-        //----------------------------------------------------------------------------------------------------
-        const createOrder = async () => {
-            console.log('Which products do you want in your order?')
+        });
 
-            let selectedProducts = []
+        if (allProductsAvailable) {
+          allProductsInStock++;
+        } else {
+          noProductsInStock++;
+        }
+      });
 
-            const allProducts = await productModel.find({});
-            allProducts.forEach((product, i) => console.log(i++, ". ", product.product, " ", product.price + "$ ", product.stock, "pcs left"))
+      console.log(
+        "Number of offers with all products in stock:",
+        allProductsInStock
+      );
+      console.log(
+        "Number of offers with some products in stock:",
+        someProductsInStock
+      );
+      console.log(
+        "Number of offers with no products in stock:",
+        noProductsInStock
+      );
+    };
+    // const countOffersByStock = async () => {
+    //     const pipeline = [
+    //       {
+    //         $unwind: "$products",
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "productModel", // Mongoose-modellens namn för dina produktobjekt
+    //           localField: "products.productName",
+    //           foreignField: "product",
+    //           as: "matchedProduct",
+    //         },
+    //       },
+    //       {
+    //         $unwind: "$matchedProduct",
+    //       },
+    //       {
+    //         $group: {
+    //           _id: "$_id",
+    //           offerName: { $first: "$offerName" },
+    //           allProductsInStock: {
+    //             $sum: {
+    //               $cond: {
+    //                 if: { $gt: ["$matchedProduct.stock", 0] },
+    //                 then: 1,
+    //                 else: 0,
+    //               },
+    //             },
+    //           },
+    //           totalProducts: { $sum: 1 },
+    //         },
+    //       },
+    //       {
+    //         $project: {
+    //           offerName: 1,
+    //           allProductsInStock: 1,
+    //           someProductsInStock: {
+    //             $cond: {
+    //               if: { $eq: ["$allProductsInStock", "$totalProducts"] },
+    //               then: 0,
+    //               else: 1,
+    //             },
+    //           },
+    //           noProductsInStock: {
+    //             $cond: {
+    //               if: { $eq: ["$allProductsInStock", 0] },
+    //               then: 1,
+    //               else: 0,
+    //             },
+    //           },
+    //         },
+    //       },
+    //       {
+    //         $group: {
+    //           _id: null,
+    //           totalAllProductsInStock: { $sum: "$allProductsInStock" },
+    //           totalSomeProductsInStock: { $sum: "$someProductsInStock" },
+    //           totalNoProductsInStock: { $sum: "$noProductsInStock" },
+    //         },
+    //       },
+    //     ];
 
-            let placingOrder = true
+    //     const result = await offerModel.aggregate(pipeline);
+    //     console.log(result[0]);
+    //   };
+    //----------------------------------------------------------------------------------------------------
+    // 8
+    //----------------------------------------------------------------------------------------------------
+    const createOrder = async () => {
+      console.log("Which products do you want in your order?");
 
-            while (placingOrder) {
-                const chosenProduct = p("Please enter the corresponding number of the product you want: ");
-                if (chosenProduct >= 0 && chosenProduct < allProducts.length) {
+      let selectedProducts = [];
 
-                    const productQuantity = parseInt(p(`How many ${allProducts[chosenProduct].product} would you like to add to your order? `))
-                    if (!isNaN(productQuantity) && productQuantity > 0 && productQuantity <= allProducts[chosenProduct].stock) {
+      const allProducts = await productModel.find({});
+      allProducts.forEach((product, i) =>
+        console.log(
+          i++,
+          ". ",
+          product.product,
+          " ",
+          product.price + "$ ",
+          product.stock,
+          "pcs left"
+        )
+      );
 
-                        let productAndQuantity = {
-                            productName: allProducts[chosenProduct].product,
-                            productPrice: allProducts[chosenProduct].price,
-                            quantity: productQuantity,
-                        }
+      let placingOrder = true;
 
-                        selectedProducts.push(productAndQuantity)
-
-                        const continuePurchase = p("Do you wish to continue shopping? Y/N ").toLowerCase();
-                        if (continuePurchase === "n") {
-                            placingOrder = false;
-                        } else if (continuePurchase !== "y") {
-                            console.log("That is not a valid answer! Please try again.");
-                        }
-                    }
-                }
-            }
-
-            let totalPrice = 0
-            selectedProducts.map(item => { totalPrice += item.quantity * item.productPrice })
-
-            const newSalesOrder = await new salesOrderModel(
-                {
-                    orderNumber: (await salesOrderModel.countDocuments()) + 1,
-                    dateOfOrder: Date(Date.now()),
-                    products: selectedProducts,
-                    totalPrice: parseInt(totalPrice),
-                    status: "pending",
-                }
+      while (placingOrder) {
+        const chosenProduct = p(
+          "Please enter the corresponding number of the product you want: "
+        );
+        if (chosenProduct >= 0 && chosenProduct < allProducts.length) {
+          const productQuantity = parseInt(
+            p(
+              `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
             )
-            await newSalesOrder.save()
-                .then(() => { console.log(`New Sales Order with ID ${newSalesOrder._id} has been created`) })
-                .catch((err) => console.log(err));
-
-        };
-        //----------------------------------------------------------------------------------------------------
-
-
-        // Meny val 2 (Elin jobbar här)
-        const addCategory = async () => {
-            let name = p("Enter the category name: ");
-            let description = p("Enter the category description: ");
-
-            const newCategory = {
-                name: name,
-                description: description,
+          );
+          if (
+            !isNaN(productQuantity) &&
+            productQuantity > 0 &&
+            productQuantity <= allProducts[chosenProduct].stock
+          ) {
+            let productAndQuantity = {
+              productName: allProducts[chosenProduct].product,
+              productPrice: allProducts[chosenProduct].price,
+              productCost: allProducts[chosenProduct].cost,
+              quantity: productQuantity,
             };
 
-            const categoryDocument = new categoryModel(newCategory);
-            await categoryDocument.save();
+            selectedProducts.push(productAndQuantity);
+
+            const continuePurchase = p(
+              "Do you wish to continue shopping? Y/N "
+            ).toLowerCase();
+            if (continuePurchase === "n") {
+              placingOrder = false;
+            } else if (continuePurchase !== "y") {
+              console.log("That is not a valid answer! Please try again.");
+            }
+          } else {
+            console.log(
+              "This product is out of stock or the amount entered was invalid!"
+            );
+          }
+        } else {
+          console.log(
+            `${chosenProduct} is not a valid choice, please try again.`
+          );
+        }
+      }
+
+      let totalPrice = 0;
+      selectedProducts.map((item) => {
+        totalPrice += item.quantity * item.productPrice;
+      });
+
+      let totalCost = 0;
+      selectedProducts.map((item) => {
+        totalCost += item.quantity * item.productCost;
+      });
+
+      const newSalesOrder = await new salesOrderModel({
+        orderNumber: (await salesOrderModel.countDocuments()) + 1,
+        dateOfOrder: Date(Date.now()),
+        products: selectedProducts,
+        totalPrice: totalPrice,
+        totalCost: totalCost,
+        status: "pending",
+      });
+      await newSalesOrder
+        .save()
+        .then(() => {
+          console.log(
+            `New Sales Order with ID ${newSalesOrder._id} has been created`
+          );
+        })
+        .catch((err) => console.log(err));
+    };
+    //----------------------------------------------------------------------------------------------------
+
+    // Meny val 2 (Elin jobbar här)
+    const addCategory = async () => {
+      let name = p("Enter the category name: ");
+      let description = p("Enter the category description: ");
+
+      const newCategory = {
+        name: name,
+        description: description,
+      };
+
+      const categoryDocument = new categoryModel(newCategory);
+      await categoryDocument.save();
 
       console.log(
         "you've added",
@@ -509,8 +557,10 @@ const main = async () => {
         await addCategory();
       } else if (input == "3") {
         console.log("View products by category");
+        await viewProductsByCategory();
       } else if (input == "4") {
         console.log("View products by supplier");
+        await viewProductsBySupplier();
       } else if (input == "5") {
         console.log("View all offers within a price range");
         await filteroffers();
@@ -524,6 +574,7 @@ const main = async () => {
         );
       } else if (input == "8") {
         console.log("Create order for products");
+        await createOrder();
       } else if (input == "9") {
         console.log("Create order for offers");
       } else if (input == "10") {
