@@ -205,7 +205,6 @@ if (offerCountPre === 0) {
 
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
-
   orderNumber: { type: Number },
   dateOfOrder: { type: Date, default: Date.now() },
   products: {
@@ -220,11 +219,10 @@ const salesOrderSchema = mongoose.Schema({
   totalPrice: { type: Number },
   totalCost: { type: Number },
   totalProfit: { type: Number },
-  shipped: { type: Boolean },
-  pending: { type: Boolean },
+  status: { type: String },
 });
 
- export const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
+export const salesOrderModel = mongoose.model("sales-orders", salesOrderSchema);
 
 const salesOrderCol = await db.createCollection("sales-orders");
 
