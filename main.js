@@ -532,6 +532,12 @@ const main = async () => {
     }
     //------------------------------------------------------------------------------------------------------
 
+
+    //7
+    // loopa orders for each
+    // loopa product order.products ()
+    //ordered- quantity = product.quantity
+    
     // Meny val 5 (Elin jobbar här)
     const filterOffersByPrice = async (minPrice, maxPrice) => {
       try {
