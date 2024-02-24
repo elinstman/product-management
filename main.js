@@ -397,6 +397,73 @@ const main = async () => {
     }
     //------------------------------------------------------------------------------------------------------
 
+    const addCategoryAndSupplier = async (field, model) => {
+      const inputName = p(`Enter the name of the ${field}: `)
+      if (!inputName) return 'Please enter a valid value.'
+      else {
+          const inputDesc = p(`Enter description or info about the ${field}: `);
+          const newDoc = await new model({
+              name: inputName,
+              description: inputDesc,
+          });
+          await newDoc.save();
+
+          console.log(
+              "you've added",
+              newDoc.name,
+              " to the list of categories."
+          );
+      }
+
+      return inputName
+  }
+     const addProductN = async () => {
+
+        const newProduct = p("Enter the name of the product: ");
+
+        const chooseCategoryandSupplier = async (field, model) => {
+            console.log(`Choose a ${field} for the product`);
+            const listOfOptions = await model.distinct('name');
+            listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
+            console.log(`${listOfOptions.length}. Create a new ${field}.`);
+            const chosenIndex = parseInt(p("Enter the corresponding number: "));
+
+            let newOption;
+            if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
+            else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
+            else { console.log("Invalid input."); return };
+
+            return newOption
+        }
+
+        const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
+        const newCategory = await chooseCategoryandSupplier("category", categoryModel);
+        const newPrice = parseFloat(p("Enter the product price: "));
+        const newCost = parseFloat(p("Enter the product cost: "));
+        const newStock = parseInt(p("Enter stock quantity: "));
+
+        if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
+            const productDocument = new productModel({
+                product: newProduct,
+                supplier: newSupplier,
+                category: newCategory,
+                price: newPrice,
+                cost: newCost,
+                stock: newStock,
+            });
+
+            await productDocument.save();
+
+            console.log(
+                "you've added",
+                productDocument.product,
+                " to the list of products."
+            );
+        } else {
+            console.log("Information's missing. Unable to create a new product")
+            return;
+        }
+    };
 
     //7
     // loopa orders for each
@@ -559,52 +626,69 @@ const main = async () => {
       if (input == "0") {
         console.log("View all products");
         await viewAllProducts();
+
       } else if (input == "1") {
         console.log("Add new product");
-        await addProduct();
+        await addProductN();
+
       } else if (input == "2") {
         console.log("Add new category");
-        await addCategory();
+        await addCategoryAndSupplier("category", categoryModel);
+        // await addCategory();
       } else if (input == "3") {
         await viewProductsByAttribute("category", categoryModel)
         console.log("View products by category");
+
       } else if (input == "4") {
         console.log("View products by supplier");
         await viewProductsByAttribute("supplier", supplierModel)
+
       } else if (input == "5") {
         console.log("View all offers within a price range");
         await filteroffers();
+
       } else if (input == "6") {
         console.log(
           "View all offers that contain a product from a specific category"
         );
+
       } else if (input == "7") {
         console.log(
           "View the number of offers based on the number of its products in stock"
         );
         await countOffersByStock()
+
       } else if (input == "8") {
         console.log("Create order for products");
         await createOrder();
+
       } else if (input == "9") {
         console.log("Create order for offers");
         await createOfferOrder();
+
       } else if (input == "10") {
         console.log("Ship orders");
         await shipOrder()
+
       } else if (input == "11") {
         console.log("Add a new supplier");
-        await addSupplier();
+        await addCategoryAndSupplier("supplier", supplierModel);
+        // await addSupplier();
+
       } else if (input == "12") {
         console.log("View suppliers");
         await viewAllSuppliers();
+
       } else if (input == "13") {
         console.log("View all sales");
         await viewAllSalesOrders();
+
       } else if (input == "14") {
         console.log("View sum of all profits");
+
       } else if (input == "15") {
         await exitApp();
+
       } else {
         console.log("Invalid option. Choose a number between 1-15");
       }
