@@ -490,7 +490,7 @@ const main = async () => {
     const shipOrder = async () => {
         //choose order to ship 
         const pendingOders = await salesOrderModel.aggregate([
-            { $match: { "status": "pending" } },
+            { $match: { status: "pending" } },
           ]);
 
           if (!pendingOders.length){
@@ -499,7 +499,7 @@ const main = async () => {
           } else{
             console.log("wich order would you like to ship?")
 
-            pendingOders.forEach((order, i)=>{
+            pendingOders.forEach((order)=>{
                 console.log("order ", order.orderNumber, " containering: ", order.products )
             })
 
@@ -510,11 +510,34 @@ const main = async () => {
                 console.log("Invalid Order Number");
                 return;
             } 
+
+            console.log(chosenOrder.orderType)
+            await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
+            chosenOrder.product.forEach(async(product)=>{
+
+                const product = await productModel.find({ product : item.productName})
+                console.log()
+                const updatedQuantity =  item.quantity
+                
+                await productModel.updateOne({ product: item.productName }, { status: "shipped" })
+            })
+            await productModel.updateOne({ })
+            // product-order
+            //price-cost 
+            //70% = profit
+
+
           }
 
     }
     //------------------------------------------------------------------------------------------------------
 
+
+    //7
+    // loopa orders for each
+    // loopa product order.products ()
+    //ordered- quantity = product.quantity
+    
     // Meny val 5 (Elin jobbar här)
     const filterOffersByPrice = async (minPrice, maxPrice) => {
       try {

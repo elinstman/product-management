@@ -7,10 +7,7 @@ const { db } = mongoose.connection;
 const productSchema = mongoose.Schema({
   product: { type: String },
   supplier: { type: String },
-  category: {
-    name: { type: String },
-    description: { type: String },
-  },
+  category: { type: String }, 
   price: { type: Number },
   cost: { type: Number },
   stock: { type: Number },
@@ -25,10 +22,7 @@ const products = [
   {
     product: "Laptop X1",
     supplier: "ElectroTech",
-    category: {
-      name: "Electronics",
-      description: "Cutting-edge technology",
-    },
+    category: "Electronics",
     price: 1299.99,
     cost: 899.99,
     stock: 50,
@@ -36,10 +30,7 @@ const products = [
   {
     product: "Smart Fitness Tracker",
     supplier: "ElectroTech",
-    category: {
-      name: "Electronics",
-      description: "Cutting-edge technology",
-    },
+    category: "Electronics",
     price: 79.99,
     cost: 49.99,
     stock: 75,
@@ -47,10 +38,7 @@ const products = [
   {
     product: "Organic Coffee Beans",
     supplier: "GreenHarvest",
-    category: {
-      name: "Food & Beverage",
-      description: "Locally sourced organic",
-    },
+    category: "Food & Beverage",
     price: 19.99,
     cost: 12.99,
     stock: 100,
@@ -58,10 +46,7 @@ const products = [
   {
     product: "Artisanal Chocolate Box",
     supplier: "GreenHarvest",
-    category: {
-      name: "Food & Beverage",
-      description: "Locally sourced organic",
-    },
+    category: "Food & Beverage",
     price: 29.99,
     cost: 18.99,
     stock: 60,
@@ -69,10 +54,7 @@ const products = [
   {
     product: "Outdoor Adventure Backpack",
     supplier: "TrailBlazeOutdoors",
-    category: {
-      name: "Outdoor Gear",
-      description: "Durable equipment for adventures",
-    },
+    category: "Outdoor Gear",
     price: 49.99,
     cost: 34.99,
     stock: 80,
@@ -80,10 +62,7 @@ const products = [
   {
     product: "Ultra Durable Thermos",
     supplier: "TrailBlazeOutdoors",
-    category: {
-      name: "Outdoor Gear",
-      description: "Durable equipment for adventures",
-    },
+    category: "Outdoor Gear",
     price: 24.99,
     cost: 16.99,
     stock: 90,
@@ -98,7 +77,7 @@ if (productCountPre === 0) {
 
 // Suppliers
 const supplierSchema = mongoose.Schema({
-  name: { type: String },
+  name: { type: String, required: true },
   description: { type: String },
   email: { type: String },
   phone: { type: Number },
