@@ -124,120 +124,37 @@ const main = async () => {
       }
   }
 
-
     //7
-   
+    const countOffersByStock = async ()=> {
+      const listOfOffers = await offerModel.find();
+      const allProductsInStock = []
+      const someProductsInStock = []
+      const noProductsInStock = []
 
+      for (let offer of listOfOffers) {
+          const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
+          const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
 
-    // 7 (test)
-    // ----------------------------------------------------------------------------------------------------
-    const countOffersByStock = async (productsDatabase, offersDatabase) => {
-      let allProductsInStock = 0;
-      let someProductsInStock = 0;
-      let noProductsInStock = 0;
+          const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
+          const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
 
-      offersDatabase.forEach((offer) => {
-        let allProductsAvailable = true;
-
-        offer.products.forEach((offerProduct) => {
-
-          const product = productsDatabase.find(
-            (p) => p.product === offerProduct.productName
-          );
-
-          if (product && product.stock > 0) {
-            someProductsInStock++;
-          } else {
-            allProductsAvailable = false;
+          if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName) 
+          else if (hasSomeProductInStock){
+              const productInventory = productsInOffer.map(prod => {
+                  return `${prod.product}, ${prod.stock} left in stock.`
+              })
+              someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
           }
-        });
+          else  noProductsInStock.push(offer.offerName)
 
-        if (allProductsAvailable) {
-          allProductsInStock++;
-        } else {
-          noProductsInStock++;
-        }
-      });
+      }
 
-      console.log(
-        "Number of offers with all products in stock:",
-        allProductsInStock
-      );
-      console.log(
-        "Number of offers with some products in stock:",
-        someProductsInStock
-      );
-      console.log(
-        "Number of offers with no products in stock:",
-        noProductsInStock
-      );
-    };
-    // const countOffersByStock = async () => {
-    //     const pipeline = [
-    //       {
-    //         $unwind: "$products",
-    //       },
-    //       {
-    //         $lookup: {
-    //           from: "productModel", // Mongoose-modellens namn för dina produktobjekt
-    //           localField: "products.productName",
-    //           foreignField: "product",
-    //           as: "matchedProduct",
-    //         },
-    //       },
-    //       {
-    //         $unwind: "$matchedProduct",
-    //       },
-    //       {
-    //         $group: {
-    //           _id: "$_id",
-    //           offerName: { $first: "$offerName" },
-    //           allProductsInStock: {
-    //             $sum: {
-    //               $cond: {
-    //                 if: { $gt: ["$matchedProduct.stock", 0] },
-    //                 then: 1,
-    //                 else: 0,
-    //               },
-    //             },
-    //           },
-    //           totalProducts: { $sum: 1 },
-    //         },
-    //       },
-    //       {
-    //         $project: {
-    //           offerName: 1,
-    //           allProductsInStock: 1,
-    //           someProductsInStock: {
-    //             $cond: {
-    //               if: { $eq: ["$allProductsInStock", "$totalProducts"] },
-    //               then: 0,
-    //               else: 1,
-    //             },
-    //           },
-    //           noProductsInStock: {
-    //             $cond: {
-    //               if: { $eq: ["$allProductsInStock", 0] },
-    //               then: 1,
-    //               else: 0,
-    //             },
-    //           },
-    //         },
-    //       },
-    //       {
-    //         $group: {
-    //           _id: null,
-    //           totalAllProductsInStock: { $sum: "$allProductsInStock" },
-    //           totalSomeProductsInStock: { $sum: "$someProductsInStock" },
-    //           totalNoProductsInStock: { $sum: "$noProductsInStock" },
-    //         },
-    //       },
-    //     ];
+      console.log(`Offers with all products in stock: ${allProductsInStock}\n`,
+      `Offers with some products in stock: ${someProductsInStock}\n`,
+      `Offers with no products in stock: ${noProductsInStock}`)
+  }
+    
 
-    //     const result = await offerModel.aggregate(pipeline);
-    //     console.log(result[0]);
-    //   };
-    //----------------------------------------------------------------------------------------------------
     // 8
     //----------------------------------------------------------------------------------------------------
     const createOrder = async () => {
@@ -665,6 +582,7 @@ const main = async () => {
         console.log(
           "View the number of offers based on the number of its products in stock"
         );
+        await countOffersByStock()
       } else if (input == "8") {
         console.log("Create order for products");
         await createOrder();
