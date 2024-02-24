@@ -648,6 +648,13 @@ const main = async () => {
       console.log(allSuppliers);
     };
 
+    // --------------------------------------------------------------------------------------
+    // Meny val 13
+    const viewAllSalesOrders = async () => {
+      const allOrders = await salesOrderModel.find({});
+      console.log(allOrders);
+    };
+
     // -------------------------------------------------------------------------------
 
     // Meny val 15
@@ -727,6 +734,7 @@ const main = async () => {
         await viewAllSuppliers();
       } else if (input == "13") {
         console.log("View all sales");
+        await viewAllSalesOrders();
       } else if (input == "14") {
         console.log("View sum of all profits");
       } else if (input == "15") {
