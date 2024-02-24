@@ -95,87 +95,35 @@ const main = async () => {
       );
     };
 
-    // 3
-    const filterByCategory = async (value) => {
-      const productsByCategory = await productModel.aggregate([
-        { $match: { "category.name": value } },
-      ]);
-      console.log(productsByCategory);
-    };
+  //menyval 3 och 4
+    const viewProductsByAttribute = async (attribute, model) => {
+      console.log(`wich ${attribute} would you like to view by?`);
 
-    const viewProductsByCategory = async () => {
-      console.log("wich category would you like to view by?");
+      const attributeArray = await model.distinct('name');
+      attributeArray.forEach((attributeOption, index) => { console.log(`${index}. ${attributeOption}`) });
 
-      const categories = await productModel.aggregate([
-        {
-          $group: { _id: "$category.name" },
-        },
-        {
-          $project: { _id: 0, category: "$_id" },
-        },
-      ]);
+      const chosenIndex = p("Enter the corresponding number: ");
 
-      categories.map((category, i) => {
-        console.log(i++, ". ", category.category);
-      });
+      if (chosenIndex <= (attributeArray.length - 1)) {
 
-      const chosenCategory = p("Enter the corresponding number: ");
+          if(attribute === "category"){
+              const productsByAttribute = await productModel.aggregate([
+              { $match: { category : attributeArray[chosenIndex] } },
+          ]);
+          console.log(productsByAttribute);
 
-      switch (chosenCategory) {
-        case "0":
-          await filterByCategory("Electronics");
-          break;
-        case "1":
-          await filterByCategory("Food & Beverage");
-          break;
-        case "2":
-          await filterByCategory("Outdoor Gear");
-          break;
-        default:
-          console.log("error, wrong input.");
+          } else if(attribute === "supplier"){
+              const productsByAttribute = await productModel.aggregate([
+                  { $match: { supplier : attributeArray[chosenIndex] } },
+              ]);
+              console.log(productsByAttribute);
+          }
+          
+      } else {
+          console.log("Invalid input!");
       }
-    };
+  }
 
-    //4
-    const filterBySupplier = async (chosenSupplier) => {
-      const productsBySupplier = await productModel.aggregate([
-        { $match: { supplier: chosenSupplier } },
-      ]);
-      console.log(productsBySupplier);
-    };
-
-    const viewProductsBySupplier = async () => {
-      console.log("wich supplier would you like to view by?");
-
-      const suppliers = await productModel.aggregate([
-        {
-          $group: { _id: "$supplier" },
-        },
-        {
-          $project: { _id: 0, supplier: "$_id" },
-        },
-      ]);
-
-      suppliers.map((supplier, i) => {
-        console.log(i++, ". ", supplier.supplier);
-      });
-      //bättre att be användaren skriva namnet?
-      const chosenSupplier = p("Enter the corresponding number: ");
-
-      switch (chosenSupplier) {
-        case "0":
-          await filterBySupplier("ElectroTech");
-          break;
-        case "1":
-          await filterBySupplier("GreenHarvest");
-          break;
-        case "2":
-          await filterBySupplier("TrailBlazeOutdoors");
-          break;
-        default:
-          console.log("error, wrong input.");
-      }
-    };
 
     //7
    
@@ -701,11 +649,11 @@ const main = async () => {
         console.log("Add new category");
         await addCategory();
       } else if (input == "3") {
+        await viewProductsByAttribute("category", categoryModel)
         console.log("View products by category");
-        await viewProductsByCategory();
       } else if (input == "4") {
         console.log("View products by supplier");
-        await viewProductsBySupplier();
+        await viewProductsByAttribute("supplier", supplierModel)
       } else if (input == "5") {
         console.log("View all offers within a price range");
         await filteroffers();
