@@ -11,12 +11,91 @@ const main = async () => {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
     // Meny val 0
-    const viewAll = async (model) => {
-      const allDocs = await model.find({});
-      console.log(allDocs);
+    const viewAllProducts = async () => {
+      const allProducts = await productModel.find({});
+      console.log(allProducts);
     };
 
-    //menyval 3 och 4
+    // Meny val 1 (Elin jobbar här)
+    const addProduct = async () => {
+      let product = p("Enter the name of the product: ");
+
+      let supplier;
+      while (!supplier) {
+        console.log(
+          "Choose a supplier:",
+          "\n1. ElectroTech",
+          "\n2. GreenHarvest",
+          "\n3. TrailBlazeOutdoors"
+        );
+        let supplierChoice = parseInt(p("Enter the supplier-number: "));
+        switch (supplierChoice) {
+          case 1:
+            supplier = "ElectroTech";
+            break;
+          case 2:
+            supplier = "GreenHarvest";
+            break;
+          case 3:
+            supplier = "TrailBlazeOutdoors";
+            break;
+          default:
+            console.log(
+              "Invalid supplier choice. Please enter a valid supplier number."
+            );
+        }
+      }
+
+      let category;
+      while (!category) {
+        console.log(
+          "Choose a category:",
+          "\n1. Electronics",
+          "\n2. Food & Beverage",
+          "\n3. Outdoor Gear"
+        );
+        let categoryChoice = parseInt(p("Enter the category-number: "));
+        switch (categoryChoice) {
+          case 1:
+            category = "Electronics";
+            break;
+          case 2:
+            category = "Food & Beverage";
+            break;
+          case 3:
+            category = "Outdoor Gear";
+            break;
+          default:
+            console.log(
+              "Invalid category choice. Please enter a valid category number."
+            );
+        }
+      }
+
+      let price = p("Enter the product price: ");
+      let cost = p("Enter the product cost: ");
+      let stock = p("Enter stock quantity: ");
+
+      const newProduct = {
+        product: product,
+        supplier: supplier,
+        category: category,
+        price: price,
+        cost: cost,
+        stock: stock,
+      };
+
+      const productDocument = new productModel(newProduct);
+      await productDocument.save();
+
+      console.log(
+        "you've added",
+        productDocument.product,
+        " to the list of products."
+      );
+    };
+
+  //menyval 3 och 4
     const viewProductsByAttribute = async (attribute, model) => {
       console.log(`wich ${attribute} would you like to view by?`);
 
@@ -27,53 +106,54 @@ const main = async () => {
 
       if (chosenIndex <= (attributeArray.length - 1)) {
 
-        if (attribute === "category") {
-          const productsByAttribute = await productModel.aggregate([
-            { $match: { category: attributeArray[chosenIndex] } },
+          if(attribute === "category"){
+              const productsByAttribute = await productModel.aggregate([
+              { $match: { category : attributeArray[chosenIndex] } },
           ]);
           console.log(productsByAttribute);
 
-        } else if (attribute === "supplier") {
-          const productsByAttribute = await productModel.aggregate([
-            { $match: { supplier: attributeArray[chosenIndex] } },
-          ]);
-          console.log(productsByAttribute);
-        }
-
+          } else if(attribute === "supplier"){
+              const productsByAttribute = await productModel.aggregate([
+                  { $match: { supplier : attributeArray[chosenIndex] } },
+              ]);
+              console.log(productsByAttribute);
+          }
+          
       } else {
-        console.log("Invalid input!");
+          console.log("Invalid input!");
       }
-    }
+  }
 
     //7
-    const countOffersByStock = async () => {
+    const countOffersByStock = async ()=> {
       const listOfOffers = await offerModel.find();
       const allProductsInStock = []
       const someProductsInStock = []
       const noProductsInStock = []
 
       for (let offer of listOfOffers) {
-        const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
-        const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
+          const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
+          const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
 
-        const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
-        const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
+          const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
+          const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
 
-        if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName)
-        else if (hasSomeProductInStock) {
-          const productInventory = productsInOffer.map(prod => {
-            return `${prod.product}, ${prod.stock} left in stock.`
-          })
-          someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
-        }
-        else noProductsInStock.push(offer.offerName)
+          if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName) 
+          else if (hasSomeProductInStock){
+              const productInventory = productsInOffer.map(prod => {
+                  return `${prod.product}, ${prod.stock} left in stock.`
+              })
+              someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
+          }
+          else  noProductsInStock.push(offer.offerName)
 
       }
 
       console.log(`Offers with all products in stock: ${allProductsInStock}\n`,
-        `Offers with some products in stock: ${someProductsInStock}\n`,
-        `Offers with no products in stock: ${noProductsInStock}`)
-    }
+      `Offers with some products in stock: ${someProductsInStock}\n`,
+      `Offers with no products in stock: ${noProductsInStock}`)
+  }
+    
 
     // 8
     //----------------------------------------------------------------------------------------------------
@@ -85,10 +165,13 @@ const main = async () => {
       const allProducts = await productModel.find({});
       allProducts.forEach((product, i) =>
         console.log(
-          i, ". ",
-          product.product, " ",
+          i++,
+          ". ",
+          product.product,
+          " ",
           product.price + "$ ",
-          product.stock, "pcs left"
+          product.stock,
+          "pcs left"
         )
       );
 
@@ -247,79 +330,146 @@ const main = async () => {
       }
     };
 
+    // ---------------------------------------------------------------------------------------------------------------
+    // Meny val 2 (Elin jobbar här)
+    const addCategory = async () => {
+      let name = p("Enter the category name: ");
+      let description = p("Enter the category description: ");
+
+      const newCategory = {
+        name: name,
+        description: description,
+      };
+
+      const categoryDocument = new categoryModel(newCategory);
+      await categoryDocument.save();
+
+      console.log(
+        "you've added",
+        categoryDocument.name,
+        " to the list of categories."
+      );
+    };
+
+    //------------------------------------------------------------------------------------------------------
+    // const shipOrder = async () => {
+    //     //choose order to ship 
+    //     const pendingOders = await salesOrderModel.aggregate([
+    //         { $match: { status: "pending" } },
+    //       ]);
+
+    //       if (!pendingOders.length){
+    //           console.log('No orders are available for shipping');
+    //           return;
+    //       } else{
+    //         console.log("wich order would you like to ship?")
+
+    //         pendingOders.forEach((order)=>{
+    //             console.log("order ", order.orderNumber, " containering: ", order.products )
+    //         })
+
+    //         const orderNumber = p("choose by entering order number: ")
+    //         // console.log(order)
+    //         const chosenOrder = await salesOrderModel.findOne({ orderNumber: orderNumber})
+    //         if(chosenOrder === null){
+    //             console.log("Invalid Order Number");
+    //             return;
+    //         } 
+
+    //         console.log(chosenOrder.orderType)
+    //         await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
+    //         chosenOrder.product.forEach(async(product)=>{
+
+    //             const product = await productModel.find({ product : item.productName})
+    //             console.log()
+    //             const updatedQuantity =  item.quantity
+                
+    //             await productModel.updateOne({ product: item.productName }, { status: "shipped" })
+    //         })
+    //         await productModel.updateOne({ })
+    //         // product-order
+    //         //price-cost 
+    //         //70% = profit
+
+
+    //       }
+
+    // }
+    //------------------------------------------------------------------------------------------------------
+
     const addCategoryAndSupplier = async (field, model) => {
       const inputName = p(`Enter the name of the ${field}: `)
       if (!inputName) return 'Please enter a valid value.'
       else {
-        const inputDesc = p(`Enter description or info about the ${field}: `);
-        const newDoc = await new model({
-          name: inputName,
-          description: inputDesc,
-        });
-        await newDoc.save();
+          const inputDesc = p(`Enter description or info about the ${field}: `);
+          const newDoc = await new model({
+              name: inputName,
+              description: inputDesc,
+          });
+          await newDoc.save();
 
-        console.log(
-          "you've added",
-          newDoc.name,
-          " to the list of categories."
-        );
+          console.log(
+              "you've added",
+              newDoc.name,
+              " to the list of categories."
+          );
       }
 
       return inputName
-    }
-    const addProductN = async () => {
+  }
+     const addProductN = async () => {
 
-      const newProduct = p("Enter the name of the product: ");
+        const newProduct = p("Enter the name of the product: ");
 
-      const chooseCategoryandSupplier = async (field, model) => {
-        console.log(`Choose a ${field} for the product`);
-        const listOfOptions = await model.distinct('name');
-        listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
-        console.log(`${listOfOptions.length}. Create a new ${field}.`);
-        const chosenIndex = parseInt(p("Enter the corresponding number: "));
+        const chooseCategoryandSupplier = async (field, model) => {
+            console.log(`Choose a ${field} for the product`);
+            const listOfOptions = await model.distinct('name');
+            listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
+            console.log(`${listOfOptions.length}. Create a new ${field}.`);
+            const chosenIndex = parseInt(p("Enter the corresponding number: "));
 
-        let newOption;
-        if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
-        else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
-        else { console.log("Invalid input."); return };
+            let newOption;
+            if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
+            else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
+            else { console.log("Invalid input."); return };
 
-        return newOption
-      }
+            return newOption
+        }
 
-      const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
-      const newCategory = await chooseCategoryandSupplier("category", categoryModel);
-      const newPrice = parseFloat(p("Enter the product price: "));
-      const newCost = parseFloat(p("Enter the product cost: "));
-      const newStock = parseInt(p("Enter stock quantity: "));
+        const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
+        const newCategory = await chooseCategoryandSupplier("category", categoryModel);
+        const newPrice = parseFloat(p("Enter the product price: "));
+        const newCost = parseFloat(p("Enter the product cost: "));
+        const newStock = parseInt(p("Enter stock quantity: "));
 
-      if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
-        const productDocument = new productModel({
-          product: newProduct,
-          supplier: newSupplier,
-          category: newCategory,
-          price: newPrice,
-          cost: newCost,
-          stock: newStock,
-        });
+        if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
+            const productDocument = new productModel({
+                product: newProduct,
+                supplier: newSupplier,
+                category: newCategory,
+                price: newPrice,
+                cost: newCost,
+                stock: newStock,
+            });
 
-        await productDocument.save();
+            await productDocument.save();
 
-        console.log(
-          "you've added",
-          productDocument.product,
-          " to the list of products."
-        );
-      } else {
-        console.log("Information's missing. Unable to create a new product")
-        return;
-      }
+            console.log(
+                "you've added",
+                productDocument.product,
+                " to the list of products."
+            );
+        } else {
+            console.log("Information's missing. Unable to create a new product")
+            return;
+        }
     };
 
     //7
     // loopa orders for each
     // loopa product order.products ()
     //ordered- quantity = product.quantity
-
+    
     // Meny val 5 (Elin jobbar här)
     const filterOffersByPrice = async (minPrice, maxPrice) => {
       try {
@@ -399,6 +549,44 @@ const main = async () => {
       }
     };
 
+    // ---------------------------------------------------------------------------------
+    // Meny val 11
+    const addSupplier = async () => {
+      let name = p("Enter the supplier name: ");
+      let description = p("Enter the supplier description: ");
+      let email = p("Enter the supplier email: ");
+      let phone = p("Enter the supplier phonenumber: ");
+
+      const newSupplier = {
+        name: name,
+        description: description,
+        email: email,
+        phone: phone,
+      };
+
+      const supplierDocument = new supplierModel(newSupplier);
+      await supplierDocument.save();
+
+      console.log(
+        "you've added",
+        supplierDocument.name,
+        " to the list of suppliers."
+      );
+    };
+
+    // -------------------------------------------------------------------------------
+    // Meny val 12
+    const viewAllSuppliers = async () => {
+      const allSuppliers = await supplierModel.find({});
+      console.log(allSuppliers);
+    };
+
+    // --------------------------------------------------------------------------------------
+    // Meny val 13
+    const viewAllSalesOrders = async () => {
+      const allOrders = await salesOrderModel.find({});
+      console.log(allOrders);
+    };
 
     // -------------------------------------------------------------------------------
 
@@ -436,19 +624,42 @@ const main = async () => {
 
       let input = p("Make a choice by entering a number: ");
 
-      if (input == "0") await viewAll(productModel);
-      else if (input == "1") await addProductN();
-      else if (input == "2") await addCategoryAndSupplier("category", categoryModel);
-      else if (input == "3") await viewProductsByAttribute("category", categoryModel)
-      else if (input == "4") await viewProductsByAttribute("supplier", supplierModel)
-      else if (input == "5") await filteroffers();
-      else if (input == "6") {
+      if (input == "0") {
+        console.log("View all products");
+        await viewAllProducts();
+
+      } else if (input == "1") {
+        console.log("Add new product");
+        await addProductN();
+
+      } else if (input == "2") {
+        console.log("Add new category");
+        await addCategoryAndSupplier("category", categoryModel);
+        // await addCategory();
+      } else if (input == "3") {
+        await viewProductsByAttribute("category", categoryModel)
+        console.log("View products by category");
+
+      } else if (input == "4") {
+        console.log("View products by supplier");
+        await viewProductsByAttribute("supplier", supplierModel)
+
+      } else if (input == "5") {
+        console.log("View all offers within a price range");
+        await filteroffers();
+
+      } else if (input == "6") {
         console.log(
           "View all offers that contain a product from a specific category"
         );
 
-      } else if (input == "7") await countOffersByStock()
-      else if (input == "8") {
+      } else if (input == "7") {
+        console.log(
+          "View the number of offers based on the number of its products in stock"
+        );
+        await countOffersByStock()
+
+      } else if (input == "8") {
         console.log("Create order for products");
         await createOrder();
 
@@ -460,10 +671,20 @@ const main = async () => {
         console.log("Ship orders");
         await shipOrder()
 
-      } else if (input == "11") await addCategoryAndSupplier("supplier", supplierModel);
-      else if (input == "12") await viewAll(supplierModel);
-      else if (input == "13") await viewAll(salesOrderModel);
-      else if (input == "14") {
+      } else if (input == "11") {
+        console.log("Add a new supplier");
+        await addCategoryAndSupplier("supplier", supplierModel);
+        // await addSupplier();
+
+      } else if (input == "12") {
+        console.log("View suppliers");
+        await viewAllSuppliers();
+
+      } else if (input == "13") {
+        console.log("View all sales");
+        await viewAllSalesOrders();
+
+      } else if (input == "14") {
         console.log("View sum of all profits");
 
       } else if (input == "15") {

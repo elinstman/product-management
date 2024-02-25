@@ -59,14 +59,45 @@ const test = async () => {
         listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
         const categoryIndex = p("Enter the corresponding number: ");
 
-        // const result = await offer.aggregate([])
+        const result = await offer.aggregate([
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "products",
+                    foreignField: "_id",
+                    as: "productDetails",
+                }
+            },
+            {
+                $match: {
+                    "productDetails.category": listOfCategories[categoryIndex].name
+                },
+            },
+            {
+                $project: {
+                    products: 1,
+                    price: 1,
+                    cost: 1,
+                    productDetails: 1,
+                },
+            },
+        ]);
 
-        const listOfOffers = await offerModel.find();
-        for (let offer of listOfOffers) {
-            const productNamedInOffer = offer.products.map(obj => { return obj.productName })
-            const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+        if (result.length ===  0) {
+            console.log(`No offers found for this category.`);
+            return
+        };
 
-        }
+        console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
+        result.forEach((offer, index) => {
+            console.log(index+1, ". Offer:", offer.name )
+        })
+        // const listOfOffers = await offerModel.find();
+        // for (let offer of listOfOffers) {
+        //     const productNamedInOffer = offer.products.map(obj => { return obj.productName })
+        //     const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+
+        // }
     }
 
     const addCategoryAndSupplier = async (field, model) => {
@@ -142,7 +173,8 @@ const test = async () => {
         // await countOffersByStock()
         // await addCategory()
         // await addCategoryAndSupplier("supplier", supplierModel)
-        await addProduct();
+        // await addProduct();
+        await viewOffersContainingCategory();
     }
     testFunctions()
 
