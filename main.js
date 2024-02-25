@@ -71,6 +71,18 @@ const main = async () => {
         `Offers with no products in stock: ${noProductsInStock}`)
     }
 
+    const updateOfferStatus = async () => {
+      const listOfOffers = await offerModel.find();
+
+      for (let offer of listOfOffers) {
+          const productNamedInOffer = offer.products.map(obj => { return obj.productName })
+          const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+          const isAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
+          if (isAllProductsAvailable !== offer.active) {
+              await offerModel.updateOne({ _id: offer._id }, { active: !offer.active })
+          }
+      }
+  }
     // 8
     //----------------------------------------------------------------------------------------------------
     const createOrder = async () => {
