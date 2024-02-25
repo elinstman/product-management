@@ -1,10 +1,6 @@
 import mongoose, { connect } from "mongoose";
 import propmpt from "prompt-sync";
-import { productModel } from "./create-database.js";
-import { categoryModel } from "./create-database.js";
-import { offerModel } from "./create-database.js";
-import { supplierModel } from "./create-database.js";
-import { salesOrderModel } from "./create-database.js";
+import { productModel, categoryModel, offerModel, supplierModel, salesOrderModel } from "./create-database.js";
 
 const main = async () => {
   try {
