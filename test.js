@@ -7,7 +7,7 @@ import { supplierModel } from "./create-database.js";
 import { salesOrderModel } from "./create-database.js";
 
 const test = async () => {
-        const p = propmpt();
+    const p = propmpt();
 
     const updateOfferStatus = async () => {
         const listOfOffers = await offerModel.find();
@@ -22,41 +22,159 @@ const test = async () => {
         }
     }
 
-    const viewProductsByAttribute = async (attribute, model) => {
-        console.log(`wich ${attribute} would you like to view by?`);
+    const countOffersByStock = async () => {
+        const listOfOffers = await offerModel.find();
+        const allProductsInStock = []
+        const someProductsInStock = []
+        const noProductsInStock = []
 
-        const attributeArray = await model.distinct('name');
-        attributeArray.forEach((attributeOption, index) => { console.log(`${index}. ${attributeOption}`) });
+        for (let offer of listOfOffers) {
+            const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
+            const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
 
-        const chosenIndex = p("Enter the corresponding number: ");
+            const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
+            const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
 
-        if (chosenIndex <= (attributeArray.length - 1)) {
-
-            if(attribute === "category"){
-                const productsByAttribute = await productModel.aggregate([
-                { $match: { category : attributeArray[chosenIndex] } },
-            ]);
-            console.log(productsByAttribute);
-
-            } else if(attribute === "supplier"){
-                const productsByAttribute = await productModel.aggregate([
-                    { $match: { supplier : attributeArray[chosenIndex] } },
-                ]);
-                console.log(productsByAttribute);
+            if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName)
+            else if (hasSomeProductInStock) {
+                const productInventory = productsInOffer.map(prod => {
+                    return `${prod.product}, ${prod.stock} left in stock.`
+                })
+                someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
             }
-            
-        } else {
-            console.log("Invalid input!");
+            else noProductsInStock.push(offer.offerName)
+
         }
+
+        console.log(`Offers with all products in stock: ${allProductsInStock}\n`,
+            `Offers with some products in stock: ${someProductsInStock}\n`,
+            `Offers with no products in stock: ${noProductsInStock}`)
     }
 
-    
+    const viewOffersContainingCategory = async () => {
+
+        console.log(`wich category would you like to search offers by?`);
+
+        const listOfCategories = await categoryModel.distinct('name');
+        listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
+        const categoryIndex = p("Enter the corresponding number: ");
+
+        const result = await offer.aggregate([
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "products",
+                    foreignField: "_id",
+                    as: "productDetails",
+                }
+            },
+            {
+                $match: {
+                    "productDetails.category": listOfCategories[categoryIndex].name
+                },
+            },
+            {
+                $project: {
+                    products: 1,
+                    price: 1,
+                    cost: 1,
+                    productDetails: 1,
+                },
+            },
+        ]);
+
+        if (result.length ===  0) {
+            console.log(`No offers found for this category.`);
+            return
+        };
+
+        console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
+        result.forEach((offer, index) => {
+            console.log(index+1, ". Offer:", offer.name )
+        })
+        // const listOfOffers = await offerModel.find();
+        // for (let offer of listOfOffers) {
+        //     const productNamedInOffer = offer.products.map(obj => { return obj.productName })
+        //     const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+
+        // }
+    }
+
+    const addCategoryAndSupplier = async (field, model) => {
+        const inputName = p(`Enter the name of the ${field}: `)
+        if (!inputName) return 'Please enter a valid value.'
+        else {
+            const inputDesc = p(`Enter description or info about the ${field}: `);
+            const newDoc = await new model({
+                name: inputName,
+                description: inputDesc,
+            });
+            await newDoc.save();
+
+            console.log(
+                "you've added",
+                newDoc.name,
+                " to the list of categories."
+            );
+        }
+
+        return inputName
+    }
+
+    const addProduct = async () => {
+
+        const newProduct = p("Enter the name of the product: ");
+
+        const chooseCategoryandSupplier = async (field, model) => {
+            console.log(`Choose a ${field} for the product`);
+            const listOfOptions = await model.distinct('name');
+            listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
+            console.log(`${listOfOptions.length}. Create a new ${field}.`);
+            const chosenIndex = parseInt(p("Enter the corresponding number: "));
+
+            let newOption;
+            if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
+            else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
+            else { console.log("Invalid input."); return };
+
+            return newOption
+        }
+
+        const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
+        const newCategory = await chooseCategoryandSupplier("category", categoryModel);
+        const newPrice = parseFloat(p("Enter the product price: "));
+        const newCost = parseFloat(p("Enter the product cost: "));
+        const newStock = parseInt(p("Enter stock quantity: "));
+
+        if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
+            const productDocument = new productModel({
+                product: newProduct,
+                supplier: newSupplier,
+                category: newCategory,
+                price: newPrice,
+                cost: newCost,
+                stock: newStock,
+            });
+
+            await productDocument.save();
+
+            console.log(
+                "you've added",
+                productDocument.product,
+                " to the list of products."
+            );
+        } else {
+            console.log("Information's missing. Unable to create a new product")
+            return;
+        }
+    };
 
     const testFunctions = async () => {
-        // await viewProductsByCategory()
-        // await viewProductsBySupplier()
-        await viewProductsByAttribute("category", categoryModel)
-        await viewProductsByAttribute("supplier", supplierModel)
+        // await countOffersByStock()
+        // await addCategory()
+        // await addCategoryAndSupplier("supplier", supplierModel)
+        // await addProduct();
+        await viewOffersContainingCategory();
     }
     testFunctions()
 
