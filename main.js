@@ -112,16 +112,17 @@ const main = async () => {
               `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
             )
           );
+          // const stockQuantity = parseInt(allProducts[chosenProduct].stock)
           if (
             !isNaN(productQuantity) &&
             productQuantity > 0 &&
-            productQuantity <= allProducts[chosenProduct].stock
+            productQuantity <= parseInt(allProducts[chosenProduct].stock)
           ) {
-            let productAndQuantity = {
+            const productAndQuantity = {
               productName: allProducts[chosenProduct].product,
-              productPrice: allProducts[chosenProduct].price,
-              productCost: allProducts[chosenProduct].cost,
-              quantity: productQuantity,
+              productPrice: parseFloat(allProducts[chosenProduct].price),
+              productCost: parseFloat(allProducts[chosenProduct].cost),
+              quantity: parseInt(productQuantity),
             };
 
             selectedProducts.push(productAndQuantity);
@@ -212,7 +213,7 @@ const main = async () => {
               `How many of ${allOffers[chosenOfferIndex].offerName} would you like to add to your order? `
             )
           );
-          let totalPrice = offer.offerPrice * offerQuantity;
+          let totalPrice = parseFloat(offer.offerPrice) * offerQuantity;
           console.log(
             `Total price for ${offerQuantity}pcs of offer: ${allOffers[chosenOfferIndex].offerName} = $${totalPrice}`
           );
@@ -275,7 +276,7 @@ const main = async () => {
 
       return inputName
     }
-    const addProductN = async () => {
+    const addProduct = async () => {
 
       const newProduct = p("Enter the name of the product: ");
 
@@ -296,9 +297,9 @@ const main = async () => {
 
       const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
       const newCategory = await chooseCategoryandSupplier("category", categoryModel);
-      const newPrice = parseFloat(p("Enter the product price: "));
-      const newCost = parseFloat(p("Enter the product cost: "));
-      const newStock = parseInt(p("Enter stock quantity: "));
+      const newPrice = parseFloat(p("Enter the product price: ").trim());
+      const newCost = parseFloat(p("Enter the product cost: ").trim());
+      const newStock = parseInt(p("Enter stock quantity: ").trim());
 
       if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
         const productDocument = new productModel({
@@ -445,7 +446,7 @@ const main = async () => {
       let input = p("Make a choice by entering a number: ");
 
       if (input == "0") await viewAll(productModel);
-      else if (input == "1") await addProductN();
+      else if (input == "1") await addProduct();
       else if (input == "2") await addCategoryAndSupplier("category", categoryModel);
       else if (input == "3") await viewProductsByAttribute("category", categoryModel)
       else if (input == "4") await viewProductsByAttribute("supplier", supplierModel)

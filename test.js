@@ -22,33 +22,14 @@ const test = async () => {
         }
     }
 
-    const countOffersByStock = async () => {
-        const listOfOffers = await offerModel.find();
-        const allProductsInStock = []
-        const someProductsInStock = []
-        const noProductsInStock = []
-
-        for (let offer of listOfOffers) {
-            const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
-            const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
-
-            const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
-            const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
-
-            if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName)
-            else if (hasSomeProductInStock) {
-                const productInventory = productsInOffer.map(prod => {
-                    return `${prod.product}, ${prod.stock} left in stock.`
-                })
-                someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
+    const updateOrderStatus = async () => {
+        const listOfOrders = await salesOrderModel.find();
+        for (let order of listOfOrders) {
+            if (order.status === 'shipped') {
+                await salesOrderModel.updateOne({ _id: order._id }, { status: "pending" })
             }
-            else noProductsInStock.push(offer.offerName)
-
         }
-
-        console.log(`Offers with all products in stock: ${allProductsInStock}\n`,
-            `Offers with some products in stock: ${someProductsInStock}\n`,
-            `Offers with no products in stock: ${noProductsInStock}`)
+        console.log("all orders are pending")
     }
 
     const viewOffersContainingCategory = async () => {
@@ -59,7 +40,7 @@ const test = async () => {
         listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
         const categoryIndex = p("Enter the corresponding number: ");
 
-        const result = await offer.aggregate([
+        const result = await offerModel.aggregate([
             {
                 $lookup: {
                     from: "products",
@@ -83,14 +64,14 @@ const test = async () => {
             },
         ]);
 
-        if (result.length ===  0) {
+        if (result.length === 0) {
             console.log(`No offers found for this category.`);
             return
         };
 
         console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
         result.forEach((offer, index) => {
-            console.log(index+1, ". Offer:", offer.name )
+            console.log(index + 1, ". Offer:", offer.name)
         })
         // const listOfOffers = await offerModel.find();
         // for (let offer of listOfOffers) {
@@ -100,99 +81,314 @@ const test = async () => {
         // }
     }
 
-    const addCategoryAndSupplier = async (field, model) => {
-        const inputName = p(`Enter the name of the ${field}: `)
-        if (!inputName) return 'Please enter a valid value.'
-        else {
-            const inputDesc = p(`Enter description or info about the ${field}: `);
-            const newDoc = await new model({
-                name: inputName,
-                description: inputDesc,
-            });
-            await newDoc.save();
+    const createOfferOrderE = async () => {
+        console.log("Here are available offers!");
 
-            console.log(
-                "you've added",
-                newDoc.name,
-                " to the list of categories."
+        const allOffers = await offerModel.find({});
+
+        let placingOfferOrder = true;
+
+        while (placingOfferOrder) {
+            allOffers.forEach(async (offer, i) => {
+                const offerProducts = offer.products.map((offerProduct) => {
+                    return `${offerProduct.productName}, Price/Unit - $${offerProduct.productPrice}`;
+                });
+
+                console.log(
+                    i,
+                    ". ",
+                    offer.offerName,
+                    "DEAL: ",
+                    offer.offerPrice + "$ ",
+                    "\n You get: : ",
+                    offerProducts
+                );
+            });
+
+            const choosenOffer = p(
+                "Enter the corresponding number of the offer you want: "
             );
+            let chosenOfferIndex = parseInt(choosenOffer);
+
+            if (chosenOfferIndex >= 0 && chosenOfferIndex < allOffers.length) {
+                const offer = allOffers[chosenOfferIndex];
+                const offerQuantity = parseInt(
+                    p(
+                        `How many of ${allOffers[chosenOfferIndex].offerName} would you like to add to your order? `
+                    )
+                );
+                let totalPrice = offer.offerPrice * offerQuantity;
+                console.log(
+                    `Total price for ${offerQuantity}pcs of offer: ${allOffers[chosenOfferIndex].offerName} = $${totalPrice}`
+                );
+
+                let totaltOfferCost = offer.offerCost * offerQuantity;
+
+                const placeOfferOrder = p(
+                    "Do you want to place this order? Y/N: "
+                ).toLowerCase();
+                if (placeOfferOrder === "y") {
+                    const newOfferOrder = await new salesOrderModel({
+                        orderNumber: (await salesOrderModel.countDocuments()) + 1,
+                        orderType: "offer-order",
+                        dateOfOrder: Date.now(),
+                        totalPrice: totalPrice,
+                        totalCost: totaltOfferCost,
+                        status: "pending",
+                    });
+
+                    await newOfferOrder
+                        .save()
+                        .then(() => {
+                            placingOfferOrder = false;
+                            console.log(
+                                `New Sales Order with ID ${newOfferOrder._id} has been created`
+                            );
+                        })
+                        .catch((err) => console.log(err));
+                } else if (placeOfferOrder !== "n") {
+                    placingOfferOrder = false;
+                    console.log("Invalid input! Please enter 'Y' or 'N'.");
+                } else {
+                    console.log(
+                        `${allOffers[chosenOfferIndex].offerName} is out of stock or the input entered was invalid!`
+                    );
+                }
+            } else {
+                console.log("Invalid offer index!");
+            }
+        }
+    };
+
+    const shipOrder = async () => {
+        //hämtar ordrar
+        const pendingOders = await salesOrderModel.aggregate([
+            { $match: { status: "pending" } },
+        ]);
+        if (!pendingOders.length) {
+            console.log('No orders are available for shipping');
+            return;
+        }
+        //välj order
+        console.log("wich order would you like to ship?")
+        pendingOders.forEach((order) => {
+            console.log("order ", order.orderNumber, " containing: ", order.products)
+        })
+        const orderNumber = p("choose by entering order number: ")
+  
+        const chosenOrder = await salesOrderModel.findOne({ orderNumber: orderNumber })
+        if (chosenOrder === null) {
+            console.log("Invalid Order Number");
+            return;
+        }
+        //uppdatera lager, productOder
+        const productsInOrder = chosenOrder.products
+        if (chosenOrder.orderType === "product-order") {
+            for (let product of productsInOrder) {
+
+                const productDoc = await productModel.find({ product: product.productName })
+
+                await productModel.updateOne({ _id: productDoc[0]._id }, { stock: parseInt(productDoc[0].stock - product.quantity) })
+            }
+        } else if (chosenOrder.orderType === "offer-order") {
+            console.log("offerorder")
         }
 
-        return inputName
+        // ändrar status pending -> shipped
+        await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
+        console.log(`Order ${orderNumber} is nowshipped.`)
+
+
+        // product-order
+        //price-cost 
+        //70% = profit
+
+
+        // }
+
     }
 
-    const addProduct = async () => {
+    const createOrder = async () => {
+        console.log("Which products do you want in your order?");
 
-        const newProduct = p("Enter the name of the product: ");
+        const selectedProducts = [];
 
-        const chooseCategoryandSupplier = async (field, model) => {
-            console.log(`Choose a ${field} for the product`);
-            const listOfOptions = await model.distinct('name');
-            listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
-            console.log(`${listOfOptions.length}. Create a new ${field}.`);
-            const chosenIndex = parseInt(p("Enter the corresponding number: "));
+        const allProducts = await productModel.find({});
+        allProducts.forEach((product, i) =>
+            console.log(
+                i, ". ",
+                product.product, " ",
+                product.price + "$ ",
+                product.stock, "pcs left"
+            )
+        );
 
-            let newOption;
-            if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
-            else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
-            else { console.log("Invalid input."); return };
+        let placingOrder = true;
 
-            return newOption
+        while (placingOrder) {
+            const chosenProduct = p(
+                "Please enter the corresponding number of the product you want: "
+            );
+            if (chosenProduct >= 0 && chosenProduct < allProducts.length) {
+                const productQuantity = parseInt(
+                    p(
+                        `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
+                    ).trim()
+                );
+                if (
+                    !isNaN(productQuantity) &&
+                    productQuantity > 0 &&
+                    productQuantity <= allProducts[chosenProduct].stock
+                ) {
+                    const productAndQuantity = {
+                        productName: allProducts[chosenProduct].product,
+                        productPrice: parseFloat(allProducts[chosenProduct].price),
+                        productCost: parseFloat(allProducts[chosenProduct].cost),
+                        quantity: parseInt(productQuantity),
+                    };
+
+                    selectedProducts.push(productAndQuantity);
+
+                    const continuePurchase = p(
+                        "Do you wish to continue shopping? Y/N "
+                    ).toLowerCase();
+                    if (continuePurchase === "n") {
+                        placingOrder = false;
+                    } else if (continuePurchase !== "y") {
+                        console.log("That is not a valid answer! Please try again.");
+                    }
+                } else {
+                    console.log(
+                        "This product is out of stock or the amount entered was invalid!"
+                    );
+                }
+            } else {
+                console.log(
+                    `${chosenProduct} is not a valid choice, please try again.`
+                );
+            }
         }
 
-        const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
-        const newCategory = await chooseCategoryandSupplier("category", categoryModel);
-        const newPrice = parseFloat(p("Enter the product price: "));
-        const newCost = parseFloat(p("Enter the product cost: "));
-        const newStock = parseInt(p("Enter stock quantity: "));
+        let totalPrice = 0;
+        selectedProducts.map((item) => {
+            totalPrice += item.quantity * item.productPrice;
+        });
 
-        if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
-            const productDocument = new productModel({
-                product: newProduct,
-                supplier: newSupplier,
-                category: newCategory,
-                price: newPrice,
-                cost: newCost,
-                stock: newStock,
+        let totalCost = 0;
+        selectedProducts.map((item) => {
+            totalCost += item.quantity * item.productCost;
+        });
+
+        const totalRevenue = totalPrice - totalCost
+        const totalProfit = totalRevenue * 0.7
+
+        const newSalesOrder = await new salesOrderModel({
+            orderNumber: (await salesOrderModel.countDocuments()) + 1,
+            orderType: "product-order",
+            dateOfOrder: Date(Date.now()),
+            products: selectedProducts,
+            totalPrice: totalPrice,
+            totalCost: totalCost,
+            totalRevenue: totalRevenue,
+            totalProfit: totalProfit,
+            status: "pending",
+        });
+        await newSalesOrder
+            .save()
+            .then(() => {
+                console.log(
+                    `New Sales Order with ID ${newSalesOrder._id} has been created`
+                );
+            })
+            .catch((err) => console.log(err));
+    };
+
+    const createOfferOrder = async () => {
+        console.log("Here are available offers!");
+
+        const allOffers = await offerModel.find({});
+
+        let placingOfferOrder = true;
+
+        while (placingOfferOrder) {
+            allOffers.forEach(async (offer, i) => {
+                const offerProducts = offer.products.map((offerProduct) => {
+                    return `${offerProduct.productName}, Price/Unit - $${offerProduct.productPrice}`;
+                });
+
+                console.log(
+                    i,
+                    ". ",
+                    offer.offerName,
+                    "DEAL: ",
+                    offer.offerPrice + "$ ",
+                    "\n You get: : ",
+                    offerProducts
+                );
             });
 
-            await productDocument.save();
-
-            console.log(
-                "you've added",
-                productDocument.product,
-                " to the list of products."
+            const choosenOffer = p(
+                "Enter the corresponding number of the offer you want: "
             );
-        } else {
-            console.log("Information's missing. Unable to create a new product")
-            return;
+            let chosenOfferIndex = parseInt(choosenOffer);
+
+            if (chosenOfferIndex >= 0 && chosenOfferIndex < allOffers.length) {
+                const offer = allOffers[chosenOfferIndex];
+                const offerQuantity = parseInt(
+                    p(
+                        `How many of ${allOffers[chosenOfferIndex].offerName} would you like to add to your order? `
+                    )
+                );
+                let totalPrice = offer.offerPrice * offerQuantity;
+                console.log(
+                    `Total price for ${offerQuantity}pcs of offer: ${allOffers[chosenOfferIndex].offerName} = $${totalPrice}`
+                );
+
+                let totaltOfferCost = offer.offerCost * offerQuantity;
+
+                const placeOfferOrder = p(
+                    "Do you want to place this order? Y/N: "
+                ).toLowerCase();
+                if (placeOfferOrder === "y") {
+                    const newOfferOrder = await new salesOrderModel({
+                        orderNumber: (await salesOrderModel.countDocuments()) + 1,
+                        orderType: "offer-order",
+                        dateOfOrder: Date.now(),
+                        totalPrice: totalPrice,
+                        totalCost: totaltOfferCost,
+                        status: "pending",
+                    });
+
+                    await newOfferOrder
+                        .save()
+                        .then(() => {
+                            placingOfferOrder = false;
+                            console.log(
+                                `New Sales Order with ID ${newOfferOrder._id} has been created`
+                            );
+                        })
+                        .catch((err) => console.log(err));
+                } else if (placeOfferOrder !== "n") {
+                    placingOfferOrder = false;
+                    console.log("Invalid input! Please enter 'Y' or 'N'.");
+                } else {
+                    console.log(
+                        `${allOffers[chosenOfferIndex].offerName} is out of stock or the input entered was invalid!`
+                    );
+                }
+            } else {
+                console.log("Invalid offer index!");
+            }
         }
     };
 
     const testFunctions = async () => {
-        // await countOffersByStock()
-        // await addCategory()
-        // await addCategoryAndSupplier("supplier", supplierModel)
-        // await addProduct();
-        await viewOffersContainingCategory();
+        // await createOrder()
+        await updateOrderStatus()
+        await shipOrder()
+        // await viewOffersContainingCategory()
     }
     testFunctions()
 
-    // const closeApp = async () => {
-    //     console.log("GoodBye")
-    //     running = false
-    // }
-
-    // const p = propmpt();
-    // let running = true
-
-    // while (running) {
-    //     const input = p("1. test script. 2. close: ")
-
-    //     if (input == "1") await testFunctions()
-    //     else if (input == "2") await closeApp()
-    //     else console.log('Invalid Input')
-
-    // }
 }
 test()
