@@ -73,28 +73,59 @@ const test = async () => {
 
     const calculateSumOfProfits = async () => {
         try {
-            const allOrders = await salesOrderModel.find({})
+            console.log(`Select a product to see it's total profit in offers:`);
+
+            const listOfProducts = await productModel.distinct("product");
+            listOfProducts.forEach((product, index) => {
+                console.log(`${index}. ${product}`);
+            });
+            const selectedProductIndex = parseFloat(p("Enter the corresponding number to a product or enter anything else to see the total sales profit: "));
+            let orders;
+            console.log(listOfProducts[selectedProductIndex])
+            if (!listOfProducts[selectedProductIndex]) {
+                orders = await salesOrderModel.find({});
+            } else {
+
+                const offerContainingProduct = await offerModel.aggregate([
+                    {
+                        $match: {
+                            'products.productName': listOfProducts[selectedProductIndex],
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            offerName: 1,
+                        },
+                    },
+                ]);
+
+                if (offerContainingProduct.length === 0) {
+                    console.log(`There are no offers containing this product.`);
+                    return;
+                }
+
+                orders = await salesOrderModel.aggregate([
+                    {
+                        $match: {
+                            'items.itemName': listOfProducts[selectedProductIndex],
+                        },
+                        $project: {
+                            totalPrice: 1,
+                            totalCost: 1,
+                        }
+                    },
+                ])
+                // console.log(orders)
+            }
+
             let totalProfit = 0
-            allOrders.forEach((order)=>{
-                console.log(totalProfit);
-                totalProfit += parseFloat(order.totalPrice-order.totalCost);
-                console.log("+" ,parseFloat(order.totalPrice-order.totalCost))
+            orders.forEach((order) => {
+                console.log(totalProfit, " + ", parseFloat(order.totalPrice - order.totalCost));
+                totalProfit += parseFloat(order.totalPrice - order.totalCost);
             })
-            console.log(totalProfit)
+            console.log("the total profit is: ", totalProfit)
 
-            // const products = 
-            // Find all sales orders that contain the specified product
-            // const orders = await salesOrderModel.find({ 'items.itemName': productName });
-
-            // Calculate the total profit
-            // const totalProfit = orders.reduce((sum, order) => {
-            //     return sum + order.totalProfit;
-            // }, 0);
-
-            // console.log(`Total profit from all sales orders containing ${productName}: $${totalProfit}`);
-
-            // // Return the calculated total profit
-            // return totalProfit;
         } catch (error) {
             console.error('Error:', error.message);
             throw error;
