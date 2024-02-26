@@ -132,6 +132,7 @@ const offerSchema = mongoose.Schema({
   },
   offerPrice: { type: Number },
   offerCost: { type: Number },
+  // offerProfit: { type: Number, default: 0 },
 });
 
 export const offerModel = mongoose.model("offers", offerSchema);
@@ -177,6 +178,8 @@ let offers = [
     ],
     offerPrice: 95.0,
     offerCost: 101.97,
+    // revenue: { type:  Number }, // profit-costs
+    // offerProfit: { type: Number },//price-const*0.7
   },
 ];
 
@@ -186,22 +189,40 @@ if (offerCountPre === 0) {
   await offerCol.insertMany(offers);
 }
 
+// gör offerProfit = ((offerPrice-offerCost)*0.7)" till värdet innan den skickas in i databasen, kanske onödigt?
+// offerSchema.pre('save', function (next) {
+
+//   if (this.offerPrice !== undefined && this.offerCost !== undefined) {
+//     this.offerProfit = (this.offerPrice - this.offerCost) * 0.7;
+//   }
+
+//   next();
+// });
+
+const Offer = mongoose.model('Offer', offerSchema);
+
 // SALES ORDERS
 const salesOrderSchema = mongoose.Schema({
   orderNumber: { type: Number },
   orderType: { type: String },
   dateOfOrder: { type: Date, default: Date.now() },
-  products: {
+  items: {
     type: [
       {
-        productName: { type: String },
-        productPrice: { type: Number },
+        itemName: { type: String },
+        itemPrice: { type: Number },
+        // itemCost: { type: Number },
+        sumPriceOffer: { type: Number },
+        sumCostOffer: { type: Number },
+        sumRevenueOffer: { type: Number },
+        sumProfitOffer: { type: Number },
         quantity: { type: Number },
       },
     ],
   },
   totalPrice: { type: Number },
   totalCost: { type: Number },
+  totalRevenue: {type : Number},  
   totalProfit: { type: Number },
   status: { type: String },
 });

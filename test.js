@@ -22,33 +22,14 @@ const test = async () => {
         }
     }
 
-    const countOffersByStock = async () => {
-        const listOfOffers = await offerModel.find();
-        const allProductsInStock = []
-        const someProductsInStock = []
-        const noProductsInStock = []
-
-        for (let offer of listOfOffers) {
-            const productsNamedInOffer = offer.products.map(obj => { return obj.productName })
-            const productsInOffer = await productModel.find({ product: { $in: productsNamedInOffer } });
-
-            const hasAllProductsAvailable = productsInOffer.every(product => product.stock > 0);
-            const hasSomeProductInStock = productsInOffer.some(product => product.stock > 0)
-
-            if (hasAllProductsAvailable) allProductsInStock.push(offer.offerName)
-            else if (hasSomeProductInStock) {
-                const productInventory = productsInOffer.map(prod => {
-                    return `${prod.product}, ${prod.stock} left in stock.`
-                })
-                someProductsInStock.push(`${offer.offerName} - ${productInventory}`)
+    const updateOrderStatus = async () => {
+        const listOfOrders = await salesOrderModel.find();
+        for (let order of listOfOrders) {
+            if (order.status === 'shipped') {
+                await salesOrderModel.updateOne({ _id: order._id }, { status: "pending" })
             }
-            else noProductsInStock.push(offer.offerName)
-
         }
-
-        console.log(`Offers with all products in stock: ${allProductsInStock}\n`,
-            `Offers with some products in stock: ${someProductsInStock}\n`,
-            `Offers with no products in stock: ${noProductsInStock}`)
+        console.log("all orders are pending")
     }
 
     const viewOffersContainingCategory = async () => {
@@ -59,7 +40,7 @@ const test = async () => {
         listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
         const categoryIndex = p("Enter the corresponding number: ");
 
-        const result = await offer.aggregate([
+        const result = await offerModel.aggregate([
             {
                 $lookup: {
                     from: "products",
@@ -83,14 +64,14 @@ const test = async () => {
             },
         ]);
 
-        if (result.length ===  0) {
+        if (result.length === 0) {
             console.log(`No offers found for this category.`);
             return
         };
 
         console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
         result.forEach((offer, index) => {
-            console.log(index+1, ". Offer:", offer.name )
+            console.log(index + 1, ". Offer:", offer.name)
         })
         // const listOfOffers = await offerModel.find();
         // for (let offer of listOfOffers) {
@@ -99,100 +80,158 @@ const test = async () => {
 
         // }
     }
+    const calculateSumOfProfits = async () => {
 
-    const addCategoryAndSupplier = async (field, model) => {
-        const inputName = p(`Enter the name of the ${field}: `)
-        if (!inputName) return 'Please enter a valid value.'
-        else {
-            const inputDesc = p(`Enter description or info about the ${field}: `);
-            const newDoc = await new model({
-                name: inputName,
-                description: inputDesc,
-            });
-            await newDoc.save();
-
-            console.log(
-                "you've added",
-                newDoc.name,
-                " to the list of categories."
-            );
-        }
-
-        return inputName
     }
 
-    const addProduct = async () => {
-
-        const newProduct = p("Enter the name of the product: ");
-
-        const chooseCategoryandSupplier = async (field, model) => {
-            console.log(`Choose a ${field} for the product`);
-            const listOfOptions = await model.distinct('name');
-            listOfOptions.forEach((option, index) => { console.log(`${index}. ${option}`) });
-            console.log(`${listOfOptions.length}. Create a new ${field}.`);
-            const chosenIndex = parseInt(p("Enter the corresponding number: "));
-
-            let newOption;
-            if (chosenIndex == listOfOptions.length) newOption = await addCategoryAndSupplier(field, model)
-            else if (chosenIndex < listOfOptions.length) newOption = listOfOptions[chosenIndex]
-            else { console.log("Invalid input."); return };
-
-            return newOption
-        }
-
-        const newSupplier = await chooseCategoryandSupplier("supplier", supplierModel);
-        const newCategory = await chooseCategoryandSupplier("category", categoryModel);
-        const newPrice = parseFloat(p("Enter the product price: "));
-        const newCost = parseFloat(p("Enter the product cost: "));
-        const newStock = parseInt(p("Enter stock quantity: "));
-
-        if (newProduct && newSupplier && newCategory && newPrice && newCost && newStock) {
-            const productDocument = new productModel({
-                product: newProduct,
-                supplier: newSupplier,
-                category: newCategory,
-                price: newPrice,
-                cost: newCost,
-                stock: newStock,
-            });
-
-            await productDocument.save();
-
-            console.log(
-                "you've added",
-                productDocument.product,
-                " to the list of products."
-            );
-        } else {
-            console.log("Information's missing. Unable to create a new product")
+    const shipOrder = async () => {
+        const pendingOders = await salesOrderModel.aggregate([
+            { $match: { status: "pending" } },
+        ]);
+        if (!pendingOders.length) {
+            console.log('No orders are available for shipping');
             return;
         }
+
+        console.log("wich order would you like to ship?")
+        pendingOders.forEach((order) => {
+            console.log("order ", order.orderNumber, " containing: ", order.items)
+        })
+        const orderNumber = p("choose by entering order number: ")
+
+        const chosenOrder = await salesOrderModel.findOne({ orderNumber: orderNumber })
+        if (chosenOrder === null) {
+            console.log("Invalid Order Number");
+            return;
+        }
+
+        const productsInOrder = chosenOrder.items
+        if (chosenOrder.orderType === "product-order") {
+            for (let item of productsInOrder) {
+
+                const productDoc = await productModel.find({ product: item.itemName })
+
+                await productModel.updateOne({ _id: productDoc[0]._id }, { stock: parseInt(productDoc[0].stock - item.quantity) })
+            }
+        } else if (chosenOrder.orderType === "offer-order") {
+            for (let offer of productsInOrder) {
+
+                const offerDoc = await offerModel.find({ offerName: offer.itemName })
+
+                const productsInOffer = offerDoc[0].products
+
+                for (let product of productsInOffer) {
+                    const productDoc = await productModel.find({ product: product.productName })
+                    await productModel.updateOne({ _id: productDoc[0]._id }, { stock: parseInt(productDoc[0].stock - offer.quantity) })
+                }
+            }
+        }
+
+        await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
+        console.log(`Order ${orderNumber} is now shipped.`)
+    }
+
+    const createOrder = async () => {
+        console.log("Which products do you want in your order?");
+
+        const selectedProducts = [];
+
+        const allProducts = await productModel.find({});
+        allProducts.forEach((product, i) =>
+            console.log(
+                i, ". ",
+                product.product, " ",
+                product.price + "$ ",
+                product.stock, "pcs left"
+            )
+        );
+
+        let placingOrder = true;
+
+        while (placingOrder) {
+            const chosenProduct = p(
+                "Please enter the corresponding number of the product you want: "
+            );
+            if (chosenProduct >= 0 && chosenProduct < allProducts.length) {
+                const productQuantity = parseInt(
+                    p(
+                        `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
+                    ).trim()
+                );
+                if (
+                    !isNaN(productQuantity) &&
+                    productQuantity > 0 &&
+                    productQuantity <= allProducts[chosenProduct].stock
+                ) {
+                    const productAndQuantity = {
+                        itemName: allProducts[chosenProduct].product,
+                        itemPrice: parseFloat(allProducts[chosenProduct].price),
+                        itemCost: parseFloat(allProducts[chosenProduct].cost),
+                        quantity: parseInt(productQuantity),
+                    };
+
+                    selectedProducts.push(productAndQuantity);
+
+                    const continuePurchase = p(
+                        "Do you wish to continue shopping? Y/N "
+                    ).toLowerCase();
+                    if (continuePurchase === "n") {
+                        placingOrder = false;
+                    } else if (continuePurchase !== "y") {
+                        console.log("That is not a valid answer! Please try again.");
+                    }
+                } else {
+                    console.log(
+                        "This product is out of stock or the amount entered was invalid!"
+                    );
+                }
+            } else {
+                console.log(
+                    `${chosenProduct} is not a valid choice, please try again.`
+                );
+            }
+        }
+
+        let totalPrice = 0;
+        selectedProducts.map((item) => {
+            totalPrice += item.quantity * item.productPrice;
+        });
+
+        let totalCost = 0;
+        selectedProducts.map((item) => {
+            totalCost += item.quantity * item.productCost;
+        });
+
+        const totalRevenue = totalPrice - totalCost
+        const totalProfit = totalRevenue * 0.7
+
+        const newSalesOrder = await new salesOrderModel({
+            orderNumber: (await salesOrderModel.countDocuments()) + 1,
+            orderType: "product-order",
+            dateOfOrder: Date(Date.now()),
+            items: selectedProducts,
+            totalPrice: totalPrice,
+            totalCost: totalCost,
+            totalRevenue: totalRevenue,
+            totalProfit: totalProfit,
+            status: "pending",
+        });
+        await newSalesOrder
+            .save()
+            .then(() => {
+                console.log(
+                    `New Sales Order with ID ${newSalesOrder._id} has been created`
+                );
+            })
+            .catch((err) => console.log(err));
     };
 
+
     const testFunctions = async () => {
-        // await countOffersByStock()
-        // await addCategory()
-        // await addCategoryAndSupplier("supplier", supplierModel)
-        // await addProduct();
-        await viewOffersContainingCategory();
+        await updateOrderStatus()
+        await shipOrder()
     }
     testFunctions()
 
-    // const closeApp = async () => {
-    //     console.log("GoodBye")
-    //     running = false
-    // }
-
-    // const p = propmpt();
-    // let running = true
-
-    // while (running) {
-    //     const input = p("1. test script. 2. close: ")
-
-    //     if (input == "1") await testFunctions()
-    //     else if (input == "2") await closeApp()
-    //     else console.log('Invalid Input')
-
-    // }
 }
 test()
