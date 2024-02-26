@@ -267,7 +267,7 @@ const main = async () => {
         }
 
         const placeOfferOrder = p(
-          "Do you want to continue placing this order? Y/N: "
+          "Do you want to continue with this order? Y/N: "
         ).toLowerCase();
 
         if (placeOfferOrder === "n") {
@@ -595,22 +595,19 @@ const main = async () => {
 
     const calculateSumOfProfitsWorking = async () => {
       try {
-          //renderar produkter
           console.log(`Select a product to see it's total profit in offers:`);
           const listOfProducts = await productModel.distinct("product");
           listOfProducts.forEach((product, index) => {
               console.log(`${index}. ${product}`);
           });
-          //välj produkt eller totalprofit för alla salesorders
+
           const selectedProductIndex = parseFloat(p("Enter the corresponding number to a product or enter anything else to see the total sales profit: "));
-          //alla orders som sen ska summeras, fungerar lite som state
+
           let orders;
 
-          console.log(listOfProducts[selectedProductIndex])//check 1, hittas en produkt?
           if (!listOfProducts[selectedProductIndex]) {
-              orders = await salesOrderModel.find({});//om inte, summera alla ordrar
+              orders = await salesOrderModel.find({});
           } else {
-              //om det dyker upp en produkt, hitta de offer som innehåller produkten
               const offerContainingProduct = await offerModel.aggregate([
                   {
                       $match: {
@@ -620,26 +617,22 @@ const main = async () => {
                   {
                       $project: {
                           _id: 0,
-                          offerName: 1,//räcker med att hänvisa till offerName för nästa steg?
+                          offerName: 1,
                       },
                   },
               ]);
 
-              console.log(offerContainingProduct)//check 2, hittas det några offer?
-
               if (offerContainingProduct.length === 0) {
-                  console.log(`There are no offers containing this product.`); //inga offer hittas
+                  console.log(`There are no offers containing this product.`);
                   return;
               }
-              //hita vilka ordrar som innehåller offers från ovanstående aggregation
-              //känns som att det är här dtet blir problem?
+
               const test = []
               for (let offer of offerContainingProduct) {
-                  console.log("offer", offer)
                   const order = await salesOrderModel.aggregate([
                       {
                           $match: {
-                              'items.itemName':  offer.offerName ,//tror det är här problemet ligger?
+                              'items.itemName':  offer.offerName ,
                           },
                       },
                       {
@@ -655,26 +648,11 @@ const main = async () => {
 
               orders = test[0]
 
-              // orders = await salesOrderModel.aggregate([
-              //   {
-              //     $match: {
-              //       'items.itemName': { $in: offerContainingProduct.offerName },//tror det är här problemet ligger?
-              //     },
-              //   },
-              //   {
-              //     $group: {
-              //         _id: null,
-              //       totalPrice: {$sum: "$totalPrice"},
-              //       totalCost: {$sum: "$totalCost"},
-              //     }
-              //   },
-              // ])
-              console.log(orders) //check 3, inga orders dyker upp...
+              console.log(orders)
           }
-          //räknar ut den totala profiten på alla ordrar i let orders
+
           let totalProfit = 0
           orders.forEach((order) => {
-              console.log(totalProfit, " + ", parseFloat(order.totalPrice - order.totalCost));
               totalProfit += parseFloat(order.totalPrice - order.totalCost);
           })
           console.log("the total profit is: ", totalProfit)
