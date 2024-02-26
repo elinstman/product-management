@@ -70,74 +70,62 @@ const test = async () => {
         }
     };
 
-    // const viewOffersContainingCategory = async () => {
-
-    //     console.log(`wich category would you like to search offers by?`);
-
-    //     const listOfCategories = await categoryModel.distinct('name');
-    //     listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
-    //     const categoryIndex = p("Enter the corresponding number: ");
-
-    //     const listOfOffers = await offerModel.find({})
-
-
-
-    //     const result = await offerModel.aggregate([
-    //         {
-    //             $lookup: {
-    //                 from: "products",
-    //                 localField: "products",
-    //                 foreignField: "_id",
-    //                 as: "productDetails",
-    //             }
-    //         },
-    //         {
-    //             $match: {
-    //                 "productDetails.category": listOfCategories[categoryIndex].name
-    //             },
-    //         },
-    //         {
-    //             $project: {
-    //                 products: 1,
-    //                 price: 1,
-    //                 cost: 1,
-    //                 productDetails: 1,
-    //             },
-    //         },
-    //     ]);
-
-    //     if (result.length === 0) {
-    //         console.log(`No offers found for this category.`);
-    //         return
-    //     };
-
-    //     // console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
-    //     // result.forEach((offer, index) => {
-    //     //     console.log(index + 1, ". Offer:", offer.name)
-    //     // })
-
-    //     // const listOfOffers = await offerModel.find();
-    //     // for (let offer of listOfOffers) {
-    //     //     const productNamedInOffer = offer.products.map(obj => { return obj.productName })
-    //     //     const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
-
-    //     // }
-    // }
 
     const calculateSumOfProfits = async () => {
         try {
-            // Find all sales orders that contain the specified product
-            const orders = await SalesOrder.find({ 'items.itemName': productName });
+            console.log(`Select a product to see it's total profit in offers:`);
 
-            // Calculate the total profit
-            const totalProfit = orders.reduce((sum, order) => {
-                return sum + order.totalProfit;
-            }, 0);
+            const listOfProducts = await productModel.distinct("product");
+            listOfProducts.forEach((product, index) => {
+                console.log(`${index}. ${product}`);
+            });
+            const selectedProductIndex = parseFloat(p("Enter the corresponding number to a product or enter anything else to see the total sales profit: "));
+            let orders;
+            console.log(listOfProducts[selectedProductIndex])
+            if (!listOfProducts[selectedProductIndex]) {
+                orders = await salesOrderModel.find({});
+            } else {
 
-            console.log(`Total profit from all sales orders containing ${productName}: $${totalProfit}`);
+                const offerContainingProduct = await offerModel.aggregate([
+                    {
+                        $match: {
+                            'products.productName': listOfProducts[selectedProductIndex],
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            offerName: 1,
+                        },
+                    },
+                ]);
 
-            // Return the calculated total profit
-            return totalProfit;
+                if (offerContainingProduct.length === 0) {
+                    console.log(`There are no offers containing this product.`);
+                    return;
+                }
+
+                orders = await salesOrderModel.aggregate([
+                    {
+                        $match: {
+                            'items.itemName': listOfProducts[selectedProductIndex],
+                        },
+                        $project: {
+                            totalPrice: 1,
+                            totalCost: 1,
+                        }
+                    },
+                ])
+                // console.log(orders)
+            }
+
+            let totalProfit = 0
+            orders.forEach((order) => {
+                console.log(totalProfit, " + ", parseFloat(order.totalPrice - order.totalCost));
+                totalProfit += parseFloat(order.totalPrice - order.totalCost);
+            })
+            console.log("the total profit is: ", totalProfit)
+
         } catch (error) {
             console.error('Error:', error.message);
             throw error;
@@ -196,7 +184,7 @@ const test = async () => {
     const testFunctions = async () => {
         // await updateOrderStatus()
         // await shipOrder()
-        await viewOffersByCategory()
+        await calculateSumOfProfits()
     }
     testFunctions()
 
