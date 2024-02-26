@@ -12,13 +12,11 @@ const main = async () => {
   try {
     await connect("mongodb://127.0.0.1:27017/elin-nora-assignment-db");
 
-    // Meny val 0
     const viewAll = async (model) => {
       const allDocs = await model.find({});
       console.log(allDocs);
     };
 
-    //menyval 3 och 4
     const viewProductsByAttribute = async (attribute, model) => {
       console.log(`wich ${attribute} would you like to view by?`);
 
@@ -46,7 +44,6 @@ const main = async () => {
       }
     };
 
-    //7
     const countOffersByStock = async () => {
       const listOfOffers = await offerModel.find();
       const allProductsInStock = [];
@@ -105,8 +102,7 @@ const main = async () => {
         }
       }
     };
-    // 8
-    //----------------------------------------------------------------------------------------------------
+
     const createProductOrder = async () => {
       console.log("Which products do you want in your order?");
 
@@ -200,8 +196,6 @@ const main = async () => {
         })
         .catch((err) => console.log(err));
     };
-    //----------------------------------------------------------------------------------------------------
-    // Meny val 9
 
     const createOfferOrder = async () => {
       await updateOfferStatus()
@@ -327,6 +321,7 @@ const main = async () => {
 
       return inputName
     }
+
     const addProduct = async () => {
 
       const newProduct = p("Enter the name of the product: ");
@@ -395,12 +390,6 @@ const main = async () => {
       }
     };
 
-    //7
-    // loopa orders for each
-    // loopa product order.products ()
-    //ordered- quantity = product.quantity
-
-    // Meny val 5 (Elin jobbar här)
     const filterOffersByPrice = async (minPrice, maxPrice) => {
       try {
         const offers = await offerModel.find({
@@ -525,9 +514,45 @@ const main = async () => {
       await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
       console.log(`Order ${orderNumber} is now shipped.`)
     }
-    // -------------------------------------------------------------------------------
 
-    // Meny val 15
+    const viewOffersContainingCategory = async () => {
+      try {
+        console.log(`wich category would you like to search offers by?`);
+
+        const listOfCategories = await categoryModel.distinct('name');
+        listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
+        const categoryIndex = p("Enter the corresponding number: ");
+        console.log(listOfCategories[categoryIndex])
+
+        const productsInCategory = await productModel.find({ category: listOfCategories[categoryIndex] });
+
+        const productNamesInCategory = productsInCategory.map((product) => product.product);
+
+        const offers = await offerModel.aggregate([
+          {
+            $match: {
+              'products.productName': { $in: productNamesInCategory },
+            },
+          },
+          {
+            $project: {
+              offerName: 1,
+              products: 1,
+              offerPrice: 1,
+            },
+          },
+        ]);
+
+        offers.forEach((offer) => {
+          console.log(offer.offerName, " containing: ", offer.products, "  For Only: ", offer.offerPrice, "$");
+        });
+
+      } catch (error) {
+        console.error('Error:', error.message);
+        throw error;
+      }
+    };
+
     const exitApp = async () => {
       console.log("GoodBye");
       runApp = false;
@@ -561,36 +586,40 @@ const main = async () => {
 
       let input = p("Make a choice by entering a number: ");
 
-      if (input == "0") await viewAll(productModel);
-      else if (input == "1") await addProduct();
+      if (input == "0")
+        await viewAll(productModel);
+      else if (input == "1")
+        await addProduct();
       else if (input == "2")
         await addCategoryAndSupplier("category", categoryModel);
       else if (input == "3")
         await viewProductsByAttribute("category", categoryModel);
       else if (input == "4")
         await viewProductsByAttribute("supplier", supplierModel);
-      else if (input == "5") await filteroffers();
-      else if (input == "6") {
-        console.log(
-          "View all offers that contain a product from a specific category"
-        );
-      } else if (input == "7") await countOffersByStock();
+      else if (input == "5")
+        await filteroffers();
+      else if (input == "6")
+        await viewOffersContainingCategory();
+      else if (input == "7")
+        await countOffersByStock();
       else if (input == "8")
         await createProductOrder();
-        else if (input == "9")
+      else if (input == "9")
         await createOfferOrder();
-      else if (input == "10") await shipOrder();
+      else if (input == "10")
+        await shipOrder();
       else if (input == "11")
         await addCategoryAndSupplier("supplier", supplierModel);
-      else if (input == "12") await viewAll(supplierModel);
-      else if (input == "13") await viewAll(salesOrderModel);
+      else if (input == "12")
+        await viewAll(supplierModel);
+      else if (input == "13")
+        await viewAll(salesOrderModel);
       else if (input == "14") {
         console.log("View sum of all profits");
-      } else if (input == "15") {
+      } else if (input == "15")
         await exitApp();
-      } else {
+      else
         console.log("Invalid option. Choose a number between 1-15");
-      }
     }
   } catch (error) {
     console.error("An error occurred:", error);
