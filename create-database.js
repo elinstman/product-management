@@ -206,19 +206,24 @@ const salesOrderSchema = mongoose.Schema({
   orderNumber: { type: Number },
   orderType: { type: String },
   dateOfOrder: { type: Date, default: Date.now() },
-  products: {
+  items: {
     type: [
       {
-        productName: { type: String },
-        productPrice: { type: Number },
+        itemName: { type: String },
+        itemPrice: { type: Number },
+        // itemCost: { type: Number },
+        sumPriceOffer: { type: Number },
+        sumCostOffer: { type: Number },
+        sumRevenueOffer: { type: Number },
+        sumProfitOffer: { type: Number },
         quantity: { type: Number },
       },
     ],
   },
   totalPrice: { type: Number },
   totalCost: { type: Number },
-  // totalRevenue: {type : Number}, // profit-costs 
-  // totalProfit: { type: Number }, //price-const*0.7
+  totalRevenue: {type : Number},  
+  totalProfit: { type: Number },
   status: { type: String },
 });
 
