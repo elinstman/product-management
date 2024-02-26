@@ -133,7 +133,7 @@ const main = async () => {
               `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
             )
           );
-          const stockQuantity = parseInt(allProducts[chosenProduct].stock)
+          const stockQuantity = parseInt(allProducts[chosenProduct].stock);
           if (
             !isNaN(productQuantity) &&
             productQuantity > 0 &&
@@ -198,11 +198,11 @@ const main = async () => {
     };
 
     const createOfferOrder = async () => {
-      await updateOfferStatus()
+      await updateOfferStatus();
       console.log("Here are available offers!");
 
       const allOffers = await offerModel.find({ active: true });
-      const selectedOffers = []
+      const selectedOffers = [];
       let placingOfferOrder = true;
 
       while (placingOfferOrder) {
@@ -222,9 +222,9 @@ const main = async () => {
           );
         });
 
-        const chosenOfferIndex = parseInt(p(
-          "Enter the corresponding number of the offer you want: "
-        ));
+        const chosenOfferIndex = parseInt(
+          p("Enter the corresponding number of the offer you want: ")
+        );
         const offer = allOffers[chosenOfferIndex];
 
         if (!offer) {
@@ -237,26 +237,32 @@ const main = async () => {
           );
 
           if (!isNaN(offerQuantity) && offerQuantity > 0) {
-
-            const totalOfferPrice = parseFloat(offer.offerPrice) * offerQuantity
-            let totalOfferCost = 0
-            if (offerQuantity <= 10) totalOfferCost = parseFloat(offer.offerCost) * offerQuantity
-            else totalOfferCost = parseFloat((parseFloat(offer.offerCost) * offerQuantity) * 0.9)
-            const totalOfferRevenue = parseFloat(totalOfferPrice - totalOfferCost)
-            const totalOfferProfit = parseFloat(totalOfferRevenue * 0.7)
-            const offerObj = ({
+            const totalOfferPrice =
+              parseFloat(offer.offerPrice) * offerQuantity;
+            let totalOfferCost = 0;
+            if (offerQuantity <= 10)
+              totalOfferCost = parseFloat(offer.offerCost) * offerQuantity;
+            else
+              totalOfferCost = parseFloat(
+                parseFloat(offer.offerCost) * offerQuantity * 0.9
+              );
+            const totalOfferRevenue = parseFloat(
+              totalOfferPrice - totalOfferCost
+            );
+            const totalOfferProfit = parseFloat(totalOfferRevenue * 0.7);
+            const offerObj = {
               itemName: offer.offerName,
               itemPrice: offer.offerPrice,
               sumPriceOffer: totalOfferPrice,
               sumCostOffer: totalOfferCost,
               sumRevenueOffer: totalOfferRevenue,
               sumProfitOffer: totalOfferProfit,
-              quantity: offerQuantity
-            })
+              quantity: offerQuantity,
+            };
 
-            selectedOffers.push(offerObj)
+            selectedOffers.push(offerObj);
           } else {
-            console.log("invalid input")
+            console.log("invalid input");
           }
         }
 
@@ -264,25 +270,25 @@ const main = async () => {
           "Do you want to continue placing this order? Y/N: "
         ).toLowerCase();
 
-        if (placeOfferOrder === 'n') {
+        if (placeOfferOrder === "n") {
           if (selectedOffers.length == 0) {
-            return
+            return;
           }
-          placingOfferOrder = false
-        } else if (placeOfferOrder !== 'y') {
+          placingOfferOrder = false;
+        } else if (placeOfferOrder !== "y") {
           console.log("Invalid answer");
           return;
         }
       }
 
-      let totalPrice = 0
-      selectedOffers.map(item => totalPrice += item.sumPriceOffer)
+      let totalPrice = 0;
+      selectedOffers.map((item) => (totalPrice += item.sumPriceOffer));
 
-      let totalCost = 0
-      selectedOffers.map(item => totalCost += item.sumCostOffer)
+      let totalCost = 0;
+      selectedOffers.map((item) => (totalCost += item.sumCostOffer));
 
-      const totalRevenue = parseFloat(totalPrice - totalCost)
-      const totalProfit = parseFloat(totalRevenue * 0.7)
+      const totalRevenue = parseFloat(totalPrice - totalCost);
+      const totalProfit = parseFloat(totalRevenue * 0.7);
 
       const newSalesOrder = await new salesOrderModel({
         orderNumber: (await salesOrderModel.countDocuments()) + 1,
@@ -303,7 +309,7 @@ const main = async () => {
           );
         })
         .catch((err) => console.log(err));
-    }
+    };
 
     const addCategoryAndSupplier = async (field, model) => {
       const inputName = p(`Enter the name of the ${field}: `);
@@ -319,11 +325,10 @@ const main = async () => {
         console.log("you've added", newDoc.name, `to the list of ${field}.`);
       }
 
-      return inputName
-    }
+      return inputName;
+    };
 
     const addProduct = async () => {
-
       const newProduct = p("Enter the name of the product: ");
 
       const chooseCategoryandSupplier = async (field, model) => {
@@ -366,7 +371,7 @@ const main = async () => {
         newCategory &&
         newPrice &&
         newCost &&
-        newStock
+        newStock >= 0
       ) {
         const productDocument = new productModel({
           product: newProduct,
@@ -473,65 +478,84 @@ const main = async () => {
         { $match: { status: "pending" } },
       ]);
       if (!pendingOders.length) {
-        console.log('No orders are available for shipping');
+        console.log("No orders are available for shipping");
         return;
       }
 
-      console.log("wich order would you like to ship?")
+      console.log("wich order would you like to ship?");
       pendingOders.forEach((order) => {
-        console.log("order ", order.orderNumber, " containing: ", order.items)
-      })
-      const orderNumber = p("choose by entering order number: ")
+        console.log("order ", order.orderNumber, " containing: ", order.items);
+      });
+      const orderNumber = p("choose by entering order number: ");
 
-      const chosenOrder = await salesOrderModel.findOne({ orderNumber: orderNumber })
+      const chosenOrder = await salesOrderModel.findOne({
+        orderNumber: orderNumber,
+      });
       if (chosenOrder === null) {
         console.log("Invalid Order Number");
         return;
       }
 
-      const productsInOrder = chosenOrder.items
+      const productsInOrder = chosenOrder.items;
       if (chosenOrder.orderType === "product-order") {
         for (let item of productsInOrder) {
+          const productDoc = await productModel.find({
+            product: item.itemName,
+          });
 
-          const productDoc = await productModel.find({ product: item.itemName })
-
-          await productModel.updateOne({ _id: productDoc[0]._id }, { stock: parseInt(productDoc[0].stock - item.quantity) })
+          await productModel.updateOne(
+            { _id: productDoc[0]._id },
+            { stock: parseInt(productDoc[0].stock - item.quantity) }
+          );
         }
       } else if (chosenOrder.orderType === "offer-order") {
         for (let offer of productsInOrder) {
+          const offerDoc = await offerModel.find({ offerName: offer.itemName });
 
-          const offerDoc = await offerModel.find({ offerName: offer.itemName })
-
-          const productsInOffer = offerDoc[0].products
+          const productsInOffer = offerDoc[0].products;
 
           for (let product of productsInOffer) {
-            const productDoc = await productModel.find({ product: product.productName })
-            await productModel.updateOne({ _id: productDoc[0]._id }, { stock: parseInt(productDoc[0].stock - offer.quantity) })
+            const productDoc = await productModel.find({
+              product: product.productName,
+            });
+            await productModel.updateOne(
+              { _id: productDoc[0]._id },
+              { stock: parseInt(productDoc[0].stock - offer.quantity) }
+            );
           }
         }
       }
 
-      await salesOrderModel.updateOne({ _id: chosenOrder._id }, { status: "shipped" })
-      console.log(`Order ${orderNumber} is now shipped.`)
-    }
+      await salesOrderModel.updateOne(
+        { _id: chosenOrder._id },
+        { status: "shipped" }
+      );
+      console.log(`Order ${orderNumber} is now shipped.`);
+    };
 
     const viewOffersContainingCategory = async () => {
       try {
         console.log(`wich category would you like to search offers by?`);
 
-        const listOfCategories = await categoryModel.distinct('name');
-        listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
+        const listOfCategories = await categoryModel.distinct("name");
+        listOfCategories.forEach((category, index) => {
+          console.log(`${index}. ${category}`);
+        });
         const categoryIndex = p("Enter the corresponding number: ");
-        console.log(listOfCategories[categoryIndex])
+        console.log(listOfCategories[categoryIndex]);
 
-        const productsInCategory = await productModel.find({ category: listOfCategories[categoryIndex] });
+        const productsInCategory = await productModel.find({
+          category: listOfCategories[categoryIndex],
+        });
 
-        const productNamesInCategory = productsInCategory.map((product) => product.product);
+        const productNamesInCategory = productsInCategory.map(
+          (product) => product.product
+        );
 
         const offers = await offerModel.aggregate([
           {
             $match: {
-              'products.productName': { $in: productNamesInCategory },
+              "products.productName": { $in: productNamesInCategory },
             },
           },
           {
@@ -544,11 +568,17 @@ const main = async () => {
         ]);
 
         offers.forEach((offer) => {
-          console.log(offer.offerName, " containing: ", offer.products, "  For Only: ", offer.offerPrice, "$");
+          console.log(
+            offer.offerName,
+            " containing: ",
+            offer.products,
+            "  For Only: ",
+            offer.offerPrice,
+            "$"
+          );
         });
-
       } catch (error) {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
         throw error;
       }
     };
@@ -586,40 +616,28 @@ const main = async () => {
 
       let input = p("Make a choice by entering a number: ");
 
-      if (input == "0")
-        await viewAll(productModel);
-      else if (input == "1")
-        await addProduct();
+      if (input == "0") await viewAll(productModel);
+      else if (input == "1") await addProduct();
       else if (input == "2")
         await addCategoryAndSupplier("category", categoryModel);
       else if (input == "3")
         await viewProductsByAttribute("category", categoryModel);
       else if (input == "4")
         await viewProductsByAttribute("supplier", supplierModel);
-      else if (input == "5")
-        await filteroffers();
-      else if (input == "6")
-        await viewOffersContainingCategory();
-      else if (input == "7")
-        await countOffersByStock();
-      else if (input == "8")
-        await createProductOrder();
-      else if (input == "9")
-        await createOfferOrder();
-      else if (input == "10")
-        await shipOrder();
+      else if (input == "5") await filteroffers();
+      else if (input == "6") await viewOffersContainingCategory();
+      else if (input == "7") await countOffersByStock();
+      else if (input == "8") await createProductOrder();
+      else if (input == "9") await createOfferOrder();
+      else if (input == "10") await shipOrder();
       else if (input == "11")
         await addCategoryAndSupplier("supplier", supplierModel);
-      else if (input == "12")
-        await viewAll(supplierModel);
-      else if (input == "13")
-        await viewAll(salesOrderModel);
+      else if (input == "12") await viewAll(supplierModel);
+      else if (input == "13") await viewAll(salesOrderModel);
       else if (input == "14") {
         console.log("View sum of all profits");
-      } else if (input == "15")
-        await exitApp();
-      else
-        console.log("Invalid option. Choose a number between 1-15");
+      } else if (input == "15") await exitApp();
+      else console.log("Invalid option. Choose a number between 1-15");
     }
   } catch (error) {
     console.error("An error occurred:", error);
