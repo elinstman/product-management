@@ -32,56 +32,116 @@ const test = async () => {
         console.log("all orders are pending")
     }
 
-    const viewOffersContainingCategory = async () => {
+    const viewOffersByCategory = async () => {
+        try {
+            console.log(`wich category would you like to search offers by?`);
 
-        console.log(`wich category would you like to search offers by?`);
+            const listOfCategories = await categoryModel.distinct('name');
+            listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
+            const categoryIndex = p("Enter the corresponding number: ");
+            console.log(listOfCategories[categoryIndex])
 
-        const listOfCategories = await categoryModel.distinct('name');
-        listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
-        const categoryIndex = p("Enter the corresponding number: ");
+            const productsInCategory = await productModel.find({ category: listOfCategories[categoryIndex] });
 
-        const result = await offerModel.aggregate([
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "products",
-                    foreignField: "_id",
-                    as: "productDetails",
-                }
-            },
-            {
-                $match: {
-                    "productDetails.category": listOfCategories[categoryIndex].name
+            const productNamesInCategory = productsInCategory.map((product) => product.product);
+
+            const offers = await offerModel.aggregate([
+                {
+                    $match: {
+                        'products.productName': { $in: productNamesInCategory },
+                    },
                 },
-            },
-            {
-                $project: {
-                    products: 1,
-                    price: 1,
-                    cost: 1,
-                    productDetails: 1,
+                {
+                    $project: {
+                        offerName: 1,
+                        products: 1,
+                        offerPrice: 1,
+                    },
                 },
-            },
-        ]);
+            ]);
 
-        if (result.length === 0) {
-            console.log(`No offers found for this category.`);
-            return
-        };
+            offers.forEach((offer) => {
+                console.log(offer.offerName, " containing: ", offer.products, "  For Only: ", offer.offerPrice, "$");
+            });
 
-        console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
-        result.forEach((offer, index) => {
-            console.log(index + 1, ". Offer:", offer.name)
-        })
-        // const listOfOffers = await offerModel.find();
-        // for (let offer of listOfOffers) {
-        //     const productNamedInOffer = offer.products.map(obj => { return obj.productName })
-        //     const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+        } catch (error) {
+            console.error('Error:', error.message);
+            throw error;
+        }
+    };
 
-        // }
-    }
+    // const viewOffersContainingCategory = async () => {
+
+    //     console.log(`wich category would you like to search offers by?`);
+
+    //     const listOfCategories = await categoryModel.distinct('name');
+    //     listOfCategories.forEach((category, index) => { console.log(`${index}. ${category}`) });
+    //     const categoryIndex = p("Enter the corresponding number: ");
+
+    //     const listOfOffers = await offerModel.find({})
+
+
+
+    //     const result = await offerModel.aggregate([
+    //         {
+    //             $lookup: {
+    //                 from: "products",
+    //                 localField: "products",
+    //                 foreignField: "_id",
+    //                 as: "productDetails",
+    //             }
+    //         },
+    //         {
+    //             $match: {
+    //                 "productDetails.category": listOfCategories[categoryIndex].name
+    //             },
+    //         },
+    //         {
+    //             $project: {
+    //                 products: 1,
+    //                 price: 1,
+    //                 cost: 1,
+    //                 productDetails: 1,
+    //             },
+    //         },
+    //     ]);
+
+    //     if (result.length === 0) {
+    //         console.log(`No offers found for this category.`);
+    //         return
+    //     };
+
+    //     // console.log(`Offers containing products from ${listOfCategories[categoryIndex].name}:`)
+    //     // result.forEach((offer, index) => {
+    //     //     console.log(index + 1, ". Offer:", offer.name)
+    //     // })
+
+    //     // const listOfOffers = await offerModel.find();
+    //     // for (let offer of listOfOffers) {
+    //     //     const productNamedInOffer = offer.products.map(obj => { return obj.productName })
+    //     //     const productsInOffer = await productModel.find({ product: { $in: productNamedInOffer } });
+
+    //     // }
+    // }
+
     const calculateSumOfProfits = async () => {
+        try {
+            // Find all sales orders that contain the specified product
+            const orders = await SalesOrder.find({ 'items.itemName': productName });
 
+            // Calculate the total profit
+            const totalProfit = orders.reduce((sum, order) => {
+                return sum + order.totalProfit;
+            }, 0);
+
+            console.log(`Total profit from all sales orders containing ${productName}: $${totalProfit}`);
+
+            // Return the calculated total profit
+            return totalProfit;
+        } catch (error) {
+            console.error('Error:', error.message);
+            throw error;
+        }
     }
 
     const shipOrder = async () => {
@@ -131,105 +191,12 @@ const test = async () => {
         console.log(`Order ${orderNumber} is now shipped.`)
     }
 
-    const createOrder = async () => {
-        console.log("Which products do you want in your order?");
-
-        const selectedProducts = [];
-
-        const allProducts = await productModel.find({});
-        allProducts.forEach((product, i) =>
-            console.log(
-                i, ". ",
-                product.product, " ",
-                product.price + "$ ",
-                product.stock, "pcs left"
-            )
-        );
-
-        let placingOrder = true;
-
-        while (placingOrder) {
-            const chosenProduct = p(
-                "Please enter the corresponding number of the product you want: "
-            );
-            if (chosenProduct >= 0 && chosenProduct < allProducts.length) {
-                const productQuantity = parseInt(
-                    p(
-                        `How many ${allProducts[chosenProduct].product} would you like to add to your order? `
-                    ).trim()
-                );
-                if (
-                    !isNaN(productQuantity) &&
-                    productQuantity > 0 &&
-                    productQuantity <= allProducts[chosenProduct].stock
-                ) {
-                    const productAndQuantity = {
-                        itemName: allProducts[chosenProduct].product,
-                        itemPrice: parseFloat(allProducts[chosenProduct].price),
-                        itemCost: parseFloat(allProducts[chosenProduct].cost),
-                        quantity: parseInt(productQuantity),
-                    };
-
-                    selectedProducts.push(productAndQuantity);
-
-                    const continuePurchase = p(
-                        "Do you wish to continue shopping? Y/N "
-                    ).toLowerCase();
-                    if (continuePurchase === "n") {
-                        placingOrder = false;
-                    } else if (continuePurchase !== "y") {
-                        console.log("That is not a valid answer! Please try again.");
-                    }
-                } else {
-                    console.log(
-                        "This product is out of stock or the amount entered was invalid!"
-                    );
-                }
-            } else {
-                console.log(
-                    `${chosenProduct} is not a valid choice, please try again.`
-                );
-            }
-        }
-
-        let totalPrice = 0;
-        selectedProducts.map((item) => {
-            totalPrice += item.quantity * item.productPrice;
-        });
-
-        let totalCost = 0;
-        selectedProducts.map((item) => {
-            totalCost += item.quantity * item.productCost;
-        });
-
-        const totalRevenue = totalPrice - totalCost
-        const totalProfit = totalRevenue * 0.7
-
-        const newSalesOrder = await new salesOrderModel({
-            orderNumber: (await salesOrderModel.countDocuments()) + 1,
-            orderType: "product-order",
-            dateOfOrder: Date(Date.now()),
-            items: selectedProducts,
-            totalPrice: totalPrice,
-            totalCost: totalCost,
-            totalRevenue: totalRevenue,
-            totalProfit: totalProfit,
-            status: "pending",
-        });
-        await newSalesOrder
-            .save()
-            .then(() => {
-                console.log(
-                    `New Sales Order with ID ${newSalesOrder._id} has been created`
-                );
-            })
-            .catch((err) => console.log(err));
-    };
 
 
     const testFunctions = async () => {
-        await updateOrderStatus()
-        await shipOrder()
+        // await updateOrderStatus()
+        // await shipOrder()
+        await viewOffersByCategory()
     }
     testFunctions()
 
