@@ -132,7 +132,7 @@ const offerSchema = mongoose.Schema({
   },
   offerPrice: { type: Number },
   offerCost: { type: Number },
-  offerProfit: { type: Number, default: 0 },
+  // offerProfit: { type: Number, default: 0 },
 });
 
 export const offerModel = mongoose.model("offers", offerSchema);
@@ -178,8 +178,8 @@ let offers = [
     ],
     offerPrice: 95.0,
     offerCost: 101.97,
-    revenue: { type:  Number }, // profit-costs
-    offerProfit: { type: Number },//price-const*0.7
+    // revenue: { type:  Number }, // profit-costs
+    // offerProfit: { type: Number },//price-const*0.7
   },
 ];
 
