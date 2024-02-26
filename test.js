@@ -133,20 +133,6 @@ const test = async () => {
 
                 orders = test[0]
 
-                // orders = await salesOrderModel.aggregate([
-                //   {
-                //     $match: {
-                //       'items.itemName': { $in: offerContainingProduct.offerName },//tror det är här problemet ligger?
-                //     },
-                //   },
-                //   {
-                //     $group: {
-                //         _id: null,
-                //       totalPrice: {$sum: "$totalPrice"},
-                //       totalCost: {$sum: "$totalCost"},
-                //     }
-                //   },
-                // ])
                 console.log(orders) //check 3, inga orders dyker upp...
             }
             //räknar ut den totala profiten på alla ordrar i let orders
